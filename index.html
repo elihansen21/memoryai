@@ -299,8 +299,83 @@ const geminiApiKey = "AIzaSyAtcdXV8NsZnye9VnG29D5vQuKimT1teo0"; // <-- Your real
         // SECTION 4: LAYOUT & MAIN APP COMPONENT
         // =================================================================================================
         
-        const NavItem = ({ icon, label, isActive, onClick, isExpanded }) => ( <button onClick={onClick} className={`flex items-center space-x-3 px-3.5 py-3 rounded-lg w-full text-left transition-colors ${isActive ? 'bg-pink-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 dark:hover:text-white'}`}><Icon name={icon} className="w-6 h-6 flex-shrink-0" /><span className={`capitalize transition-opacity duration-200 whitespace-nowrap overflow-hidden ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>{label}</span></button> );
-        const Layout = ({ children, currentPage, onNavigate, user, settings }) => { const navTabs = settings?.tabs || ['dashboard', 'goals', 'journal', 'chat', 'settings']; const [isExpanded, setIsExpanded] = useState(false); const tabDetails = { dashboard: { label: 'Dashboard', icon: 'dashboard' }, goals: { label: 'Goals', icon: 'goals' }, journal: { label: 'Journal', icon: 'journal' }, chat: { label: 'Chat', icon: 'chat' }, settings: { label: 'Settings', icon: 'settings' } }; return ( <div className="flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans"><aside className={`bg-white dark:bg-slate-800 p-4 flex-shrink-0 flex flex-col border-r border-slate-200 dark:border-slate-700 transition-all duration-300 ease-in-out ${isExpanded ? 'w-64' : 'w-20'}`} onMouseEnter={() => setIsExpanded(true)} onMouseLeave={() => setIsExpanded(false)}><div className="flex items-center space-x-2 mb-10 px-2 overflow-hidden"><Icon name="brain" className="w-8 h-8 text-pink-500 flex-shrink-0" /><h1 className={`text-2xl font-bold text-gray-900 dark:text-white transition-opacity duration-200 whitespace-nowrap ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>MemoryAI</h1></div><nav className="flex-1 space-y-2">{navTabs.map(tabKey => (<NavItem key={tabKey} icon={tabDetails[tabKey].icon} label={tabDetails[tabKey].label} isActive={currentPage === tabKey} onClick={() => onNavigate(tabKey)} isExpanded={isExpanded}/>))}</nav></aside><main className="flex-1 p-4 sm:p-8 overflow-y-auto">{children}</main></div> ); };
+        /**
+         * A single item in the navigation bar. (Updated for a professional responsive feel)
+         */
+        const NavItem = ({ icon, label, isActive, onClick, isExpanded }) => (
+            // MOBILE styles are default: centered column, takes up equal space.
+            // DESKTOP styles (sm:) override to become a row with text.
+            <button 
+                onClick={onClick} 
+                className={`flex flex-col items-center justify-center flex-1 p-2 rounded-lg transition-colors 
+                           sm:flex-row sm:justify-start sm:w-full sm:space-x-4 sm:px-3.5 sm:py-3 
+                           ${isActive ? 'bg-pink-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+            >
+                <Icon name={icon} className="w-6 h-6 flex-shrink-0" />
+                {/* Text is hidden on mobile, and fades in/out on desktop based on sidebar expansion */}
+                <span className={`hidden sm:inline transition-opacity duration-200 ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>
+                    {label}
+                </span>
+            </button>
+        );
+
+        /**
+         * The main Layout component. (Updated with a fully responsive sidebar/bottom-bar)
+         */
+        const Layout = ({ children, currentPage, onNavigate, user, settings }) => {
+            const navTabs = settings?.tabs || ['dashboard', 'goals', 'journal', 'chat', 'settings'];
+            const [isExpanded, setIsExpanded] = useState(false);
+
+            const tabDetails = {
+                dashboard: { label: 'Dashboard', icon: 'dashboard' },
+                goals: { label: 'Goals', icon: 'goals' },
+                journal: { label: 'Journal', icon: 'journal' },
+                chat: { label: 'Chat', icon: 'chat' },
+                settings: { label: 'Settings', icon: 'settings' },
+            };
+
+            return (
+                // On mobile, this is a standard block layout. On desktop, it becomes a flex row.
+                <div className="bg-slate-100 dark:bg-slate-900 font-sans sm:flex sm:h-screen">
+                    {/* NAVIGATION BAR */}
+                    <aside 
+                        // MOBILE: Fixed bar at the bottom with a top border.
+                        // DESKTOP (sm:): Becomes a relative sidebar on the left with a right border.
+                        className={`fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-800 border-t dark:border-slate-700 
+                                   sm:relative sm:flex sm:flex-col sm:border-t-0 sm:border-r 
+                                   transition-all duration-300 ease-in-out ${isExpanded ? 'sm:w-64' : 'sm:w-20'}`}
+                        onMouseEnter={() => setIsExpanded(true)}
+                        onMouseLeave={() => setIsExpanded(false)}
+                    >
+                        {/* Logo: Hidden on mobile, visible on desktop */}
+                        <div className="hidden sm:flex items-center space-x-2 p-4 mb-8">
+                            <Icon name="brain" className="w-8 h-8 text-pink-500 flex-shrink-0" />
+                            <h1 className={`text-2xl font-bold text-gray-900 dark:text-white transition-opacity duration-200 whitespace-nowrap ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>MemoryAI</h1>
+                        </div>
+
+                        {/* Nav Links: A horizontal row on mobile, a vertical column on desktop */}
+                        <nav className="flex flex-row justify-around p-1 sm:flex-col sm:flex-1 sm:p-2 sm:space-y-2">
+                            {navTabs.map(tabKey => (
+                                <NavItem 
+                                    key={tabKey}
+                                    icon={tabDetails[tabKey].icon}
+                                    label={tabDetails[tabKey].label}
+                                    isActive={currentPage === tabKey}
+                                    onClick={() => onNavigate(tabKey)}
+                                    isExpanded={isExpanded}
+                                />
+                            ))}
+                        </nav>
+                    </aside>
+
+                    {/* MAIN CONTENT AREA */}
+                    <main className="flex-1 p-4 sm:p-8 overflow-y-auto 
+                                   pb-24 sm:pb-8"> {/* Crucial: Adds padding at the bottom ONLY on mobile to prevent content from being hidden by the nav bar */}
+                        {children}
+                    </main>
+                </div>
+            );
+        };
         
         function App() {
             const [user, setUser] = useState(null);
