@@ -7,8 +7,8 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
@@ -23,7 +23,7 @@
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
-        // This new setup lets us import directly from the Firebase CDN URLs
+        // This setup lets us import directly from the Firebase CDN URLs
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js';
         import { getAuth, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js';
         import { 
@@ -51,7 +51,7 @@
         // SECTION 1: APP CONFIGURATION
         // PASTE YOUR REAL KEYS HERE. This is the most important step.
         // =================================================================================================
-        const appId = 'default-app-id'; // This is fine for now
+       const appId = 'default-app-id'; // This is fine for now
 
 // Paste your actual Firebase config object here
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -69,15 +69,12 @@ const initialAuthToken = null;
 
 // Paste your actual Gemini API key here
 const geminiApiKey = "AIzaSyAtcdXV8NsZnye9VnG29D5vQuKimT1teo0"; // <-- Your real Gemini key
-      
+
 
         // =================================================================================================
-        // PASTE YOUR ENTIRE ORIGINAL App.jsx CODE BELOW
-        // (From "SECTION 2" all the way down to the end of the App() function)
-        // DO NOT include the "import" statements or the "export default App" from the file.
+        // SECTION 2: HELPER COMPONENTS & FUNCTIONS
         // =================================================================================================
       
-        // SECTION 2: HELPER COMPONENTS & FUNCTIONS
         const Modal = ({ isOpen, onClose, title, children }) => {
           if (!isOpen) return null;
           return (
@@ -156,15 +153,17 @@ const geminiApiKey = "AIzaSyAtcdXV8NsZnye9VnG29D5vQuKimT1teo0"; // <-- Your real
             return (<span>{parts.map((part, i) => part.toLowerCase() === highlight.toLowerCase() ? <span key={i} className="bg-yellow-200 dark:bg-yellow-700 rounded">{part}</span> : part)}</span>);
         };
 
+        // =================================================================================================
         // SECTION 3: PAGE COMPONENTS
+        // =================================================================================================
+        
         const DashboardPage = ({ goals, journals, onNavigate, settings }) => {
             const favoriteGoals = useMemo(() => goals.filter(g => g.favorite).sort((a,b) => (a.sortOrder || 0) - (b.sortOrder || 0)), [goals]);
             const userName = settings?.name;
             const journalStreak = useMemo(() => {
                 if (journals.length === 0) return 0;
                 let streak = 0;
-                let today = new Date();
-                today.setHours(0, 0, 0, 0);
+                let today = new Date(); today.setHours(0, 0, 0, 0);
                 const mostRecentEntryDate = journals[0].createdAt.toDate();
                 mostRecentEntryDate.setHours(0,0,0,0);
                 if (Math.ceil((today - mostRecentEntryDate) / (1000 * 60 * 60 * 24)) > 1) return 0;
@@ -689,8 +688,18 @@ const geminiApiKey = "AIzaSyAtcdXV8NsZnye9VnG29D5vQuKimT1teo0"; // <-- Your real
             );
         };
 
+        // =================================================================================================
         // SECTION 4: LAYOUT & MAIN APP COMPONENT
-        const Layout = ({ children, currentPage, onNavigate, settings }) => {
+        // =================================================================================================
+        
+        const NavItem = ({ icon, label, isActive, onClick, isExpanded }) => (
+            <button onClick={onClick} className={`flex items-center space-x-3 px-3.5 py-3 rounded-lg w-full text-left transition-colors ${isActive ? 'bg-pink-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'}`}>
+                <Icon name={icon} className="w-6 h-6 flex-shrink-0" />
+                <span className={`capitalize transition-opacity duration-200 whitespace-nowrap overflow-hidden ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>{label}</span>
+            </button>
+        );
+
+        const Layout = ({ children, currentPage, onNavigate, user, settings }) => {
             const navTabs = settings?.tabs || ['dashboard', 'goals', 'journal', 'chat', 'settings'];
             const [isExpanded, setIsExpanded] = useState(false);
             const tabDetails = { dashboard: { label: 'Dashboard', icon: 'dashboard' }, goals: { label: 'Goals', icon: 'goals' }, journal: { label: 'Journal', icon: 'journal' }, chat: { label: 'Chat', icon: 'chat' }, settings: { label: 'Settings', icon: 'settings' } };
@@ -706,6 +715,7 @@ const geminiApiKey = "AIzaSyAtcdXV8NsZnye9VnG29D5vQuKimT1teo0"; // <-- Your real
                 </div>
             );
         };
+        
         function App() {
             const [user, setUser] = useState(null);
             const [goals, setGoals] = useState([]);
@@ -772,16 +782,18 @@ const geminiApiKey = "AIzaSyAtcdXV8NsZnye9VnG29D5vQuKimT1teo0"; // <-- Your real
             if (status.loading || !user) { return <div className="flex items-center justify-center h-screen bg-slate-900 text-white">Loading MemoryAI...</div>; }
             
             return (
-                <>
+                <React.Fragment>
                     <Layout currentPage={currentPage} onNavigate={setCurrentPage} user={user} settings={settings}>{renderPage()}</Layout>
                     <Modal isOpen={modal.isOpen} onClose={() => setModal({isOpen: false})} title={modal.title}>{modal.content}</Modal>
                     <ConfirmationModal isOpen={confirmation.isOpen} onClose={() => setConfirmation({isOpen: false})} onConfirm={confirmation.onConfirm} title={confirmation.title}>{confirmation.content}</ConfirmationModal>
-                </>
+                </React.Fragment>
             );
         }
 
-        // Final step: Render the App to the DOM
-        ReactDOM.render(<App />, document.getElementById('root'));
+        // Final step: Render the App to the DOM using the modern React 18 API
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
 
     </script>
 </body>
