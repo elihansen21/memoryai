@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MemoryAI React App</title>
-    
+<title>MemoryAI</title>
+<link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ec4899' stroke-width='1.5'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z' /%3e%3c/svg%3e">
+
     <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -101,7 +102,7 @@ const geminiApiKey = "AIzaSyAtcdXV8NsZnye9VnG29D5vQuKimT1teo0"; // <-- Your real
         // SECTION 3: PAGE COMPONENTS (This is the section that was missing)
         // =================================================================================================
         
-const DashboardPage = ({ goals, journals, onNavigate, settings }) => {
+        const DashboardPage = ({ goals, journals, onNavigate, settings }) => {
             const favoriteGoals = useMemo(() => goals.filter(g => g.favorite).sort((a,b) => (a.sortOrder || 0) - (b.sortOrder || 0)), [goals]);
             const userName = settings?.name;
         
@@ -130,7 +131,8 @@ const DashboardPage = ({ goals, journals, onNavigate, settings }) => {
         
             return (
                 <div className="space-y-8 animate-fade-in">
-                    <div className="flex justify-between items-start">
+                    {/* CHANGE: This div now stacks vertically on mobile and switches to a row on medium screens */}
+                    <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-start">
                         <div>
                             <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
                                 {userName ? `Welcome Back, ${userName}!` : "Welcome Back!"}
@@ -138,7 +140,6 @@ const DashboardPage = ({ goals, journals, onNavigate, settings }) => {
                             <p className="text-slate-500 dark:text-slate-400 mt-2">Ready to make some progress today? Let's get started. </p>
                         </div>
                          {(settings?.showStreak !== false) && (
-                            // CHANGE 1: Made this div clickable and added hover effect
                             <div 
                                 onClick={() => onNavigate('journal')}
                                 className="flex cursor-pointer items-center gap-2 rounded-xl bg-white p-3 shadow-md transition-transform hover:scale-105 dark:bg-slate-800"
@@ -152,7 +153,6 @@ const DashboardPage = ({ goals, journals, onNavigate, settings }) => {
                             </div>
                         )}
                     </div>
-                    {/* CHANGE 2: Updated grid layout for 3 columns on large screens */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
                             <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Your Favorite Goals</h3>
@@ -173,15 +173,12 @@ const DashboardPage = ({ goals, journals, onNavigate, settings }) => {
                             )}
                              <button onClick={() => onNavigate('goals')} className="mt-6 text-pink-500 hover:underline">View All Goals </button>
                         </div>
-
-                        {/* CHANGE 3: Added new tile for Journaling */}
                         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col items-center justify-center text-center">
                             <Icon name="journal" className="w-12 h-12 text-pink-500" />
                             <h3 className="text-xl font-bold mt-4 text-gray-900 dark:text-white">Write in Journal</h3>
                             <p className="text-slate-500 dark:text-slate-400 mt-2">Capture your thoughts, feelings, and progress. Start a new entry today.</p>
                              <button onClick={() => onNavigate('journal')} className="mt-6 bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition-colors">Start Writing</button>
                         </div>
-
                         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col items-center justify-center text-center">
                             <Icon name="brain" className="w-12 h-12 text-pink-500" />
                             <h3 className="text-xl font-bold mt-4 text-gray-900 dark:text-white">Chat with Memory</h3>
@@ -192,7 +189,80 @@ const DashboardPage = ({ goals, journals, onNavigate, settings }) => {
                 </div>
             );
         };
-        const SettingsPage = ({ settings, onUpdateSettings, goals, journals, user, openDevModal }) => { const [name, setName] = useState(settings?.name || ''); const [showStreak, setShowStreak] = useState(settings?.showStreak !== false); const [goalNotifications, setGoalNotifications] = useState(settings?.goalNotifications ?? false); const [journalNotifications, setJournalNotifications] = useState(settings?.journalNotifications ?? false); const [notificationTime, setNotificationTime] = useState(settings?.notificationTime || '09:00'); const isInitialMount = useRef(true); const { totalGoals, completedGoals, journalEntries } = useMemo(() => ({ totalGoals: goals.length, completedGoals: goals.filter(g => g.status === 'completed').length, journalEntries: journals.length }), [goals, journals]); useEffect(() => { if (isInitialMount.current) { isInitialMount.current = false; return; } const handler = setTimeout(() => { onUpdateSettings({ name: name }); }, 1000); return () => clearTimeout(handler); }, [name, onUpdateSettings]); const handleAdvancedSave = () => { onUpdateSettings({ showStreak, goalNotifications, journalNotifications, notificationTime }); openDevModal("Settings Saved", "Your advanced settings have been updated."); }; return ( <div className="space-y-8 animate-fade-in max-w-4xl mx-auto"> <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1> <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"> <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Personalization & Appearance</h2> <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Changes are saved automatically.</p> <div className="space-y-6"> <div><label htmlFor="name" className="block text-sm font-medium text-slate-600 dark:text-slate-400">Your Name</label><input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="How should we greet you?" className="mt-1 block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/></div> <div> <label className="block text-sm font-medium text-slate-600 dark:text-slate-400">Theme</label> <div className="mt-2 flex items-center space-x-4"> <button onClick={() => onUpdateSettings({ theme: 'light' })} className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${settings.theme === 'light' ? 'bg-pink-500 text-white' : 'bg-slate-200 dark:bg-slate-700'}`}><Icon name="sun" className="w-5 h-5" /><span>Light</span></button> <button onClick={() => onUpdateSettings({ theme: 'dark' })} className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${settings.theme === 'dark' ? 'bg-pink-500 text-white' : 'bg-slate-200 dark:bg-slate-700'}`}><Icon name="moon" className="w-5 h-5" /><span>Dark</span></button> </div> </div> </div> </div> <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"> <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Analytics</h2> <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center"> <div className="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg"><p className="text-2xl font-bold">{totalGoals}</p><p className="text-sm text-slate-500 dark:text-slate-400">Total Goals</p></div> <div className="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg"><p className="text-2xl font-bold">{completedGoals}</p><p className="text-sm text-slate-500 dark:text-slate-400">Completed</p></div> <div className="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg"><p className="text-2xl font-bold">{journalEntries}</p><p className="text-sm text-slate-500 dark:text-slate-400">Journal Entries</p></div> </div> </div> <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"> <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Advanced Settings</h2> <div className="space-y-6"> <div className="flex justify-between items-center"> <label className="text-slate-600 dark:text-slate-300">Show Journal Streak on Dashboard</label> <button onClick={() => setShowStreak(!showStreak)} className={`w-12 h-6 rounded-full flex items-center px-1 transition-colors ${showStreak ? 'bg-pink-500' : 'bg-slate-300 dark:bg-slate-600'}`}><span className={`block w-4 h-4 bg-white rounded-full transition-transform ${showStreak ? 'translate-x-6':''}`}></span></button> </div> <div className="flex justify-between items-center"> <div><label className="text-slate-600 dark:text-slate-300">Enable Goal Reminders</label><p className="text-xs text-slate-500">Feature in development</p></div> <button onClick={() => setGoalNotifications(!goalNotifications)} className={`w-12 h-6 rounded-full flex items-center px-1 transition-colors ${goalNotifications ? 'bg-pink-500' : 'bg-slate-300 dark:bg-slate-600'}`}><span className={`block w-4 h-4 bg-white rounded-full transition-transform ${goalNotifications ? 'translate-x-6':''}`}></span></button> </div> <div className="flex justify-between items-center"> <div><label className="text-slate-600 dark:text-slate-300">Enable Daily Journaling Reminders</label><p className="text-xs text-slate-500">Feature in development</p></div> <button onClick={() => setJournalNotifications(!journalNotifications)} className={`w-12 h-6 rounded-full flex items-center px-1 transition-colors ${journalNotifications ? 'bg-pink-500' : 'bg-slate-300 dark:bg-slate-600'}`}><span className={`block w-4 h-4 bg-white rounded-full transition-transform ${journalNotifications ? 'translate-x-6':''}`}></span></button> </div> { (goalNotifications || journalNotifications) && <div className="animate-fade-in-fast"><label htmlFor="notificationTime" className="block text-sm font-medium text-slate-600 dark:text-slate-400">Preferred Notification Time</label><input id="notificationTime" type="time" value={notificationTime} onChange={(e) => setNotificationTime(e.target.value)} className="mt-1 block w-full max-w-xs bg-slate-100 dark:bg-slate-700 border-transparent rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/></div> } </div> <div className="flex justify-end mt-6"><button onClick={handleAdvancedSave} className="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition-colors">Save Advanced</button></div> </div> <div className="mt-auto text-center"><p className="text-xs text-slate-500 dark:text-slate-400">User ID:</p><p className="text-xs text-slate-400 dark:text-slate-500 break-all mt-1">{user?.uid || 'N/A'}</p></div> </div> ); };
+
+        const SettingsPage = ({ settings, onUpdateSettings, goals, journals, user, openDevModal }) => {
+            const [name, setName] = useState(settings?.name || '');
+            const [showStreak, setShowStreak] = useState(settings?.showStreak !== false);
+            const [goalNotifications, setGoalNotifications] = useState(settings?.goalNotifications ?? false);
+            const [journalNotifications, setJournalNotifications] = useState(settings?.journalNotifications ?? false);
+            const [notificationTime, setNotificationTime] = useState(settings?.notificationTime || '09:00');
+            const isInitialMount = useRef(true);
+            const { totalGoals, completedGoals, journalEntries } = useMemo(() => ({ totalGoals: goals.length, completedGoals: goals.filter(g => g.status === 'completed').length, journalEntries: journals.length }), [goals, journals]);
+            
+            useEffect(() => {
+                if (isInitialMount.current) { isInitialMount.current = false; return; }
+                const handler = setTimeout(() => { onUpdateSettings({ name: name }); }, 1000);
+                return () => clearTimeout(handler);
+            }, [name, onUpdateSettings]);
+
+            const handleAdvancedSave = () => { onUpdateSettings({ showStreak, goalNotifications, journalNotifications, notificationTime }); openDevModal("Settings Saved", "Your advanced settings have been updated."); };
+            
+            return (
+                <div className="space-y-8 animate-fade-in max-w-4xl mx-auto">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
+                        <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Personalization & Appearance</h2>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Changes are saved automatically.</p>
+                        <div className="space-y-6">
+                            <div><label htmlFor="name" className="block text-sm font-medium text-slate-600 dark:text-slate-400">Your Name</label><input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="How should we greet you?" className="mt-1 block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/></div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-600 dark:text-slate-400">Theme</label>
+                                <div className="mt-2 flex items-center space-x-4">
+                                    {/* FIX: Added text colors to ensure readability on both themes */}
+                                    <button onClick={() => onUpdateSettings({ theme: 'light' })} className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${settings.theme === 'light' ? 'bg-pink-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200'}`}>
+                                        <Icon name="sun" className="w-5 h-5" />
+                                        <span>Light</span>
+                                    </button>
+                                    <button onClick={() => onUpdateSettings({ theme: 'dark' })} className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${settings.theme === 'dark' ? 'bg-pink-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200'}`}>
+                                        <Icon name="moon" className="w-5 h-5" />
+                                        <span>Dark</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
+                        <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Analytics</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                            <div className="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg">
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalGoals}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Total Goals</p>
+                            </div>
+                            <div className="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg">
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{completedGoals}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Completed</p>
+                            </div>
+                            <div className="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg">
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{journalEntries}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Journal Entries</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg">
+                        <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Advanced Settings</h2>
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center"><label className="text-slate-600 dark:text-slate-300">Show Journal Streak on Dashboard</label><button onClick={() => setShowStreak(!showStreak)} className={`w-12 h-6 rounded-full flex items-center px-1 transition-colors ${showStreak ? 'bg-pink-500' : 'bg-slate-300 dark:bg-slate-600'}`}><span className={`block w-4 h-4 bg-white rounded-full transition-transform ${showStreak ? 'translate-x-6':''}`}></span></button></div>
+                            <div className="flex justify-between items-center"><div><label className="text-slate-600 dark:text-slate-300">Enable Goal Reminders</label><p className="text-xs text-slate-500">Feature in development</p></div><button onClick={() => setGoalNotifications(!goalNotifications)} className={`w-12 h-6 rounded-full flex items-center px-1 transition-colors ${goalNotifications ? 'bg-pink-500' : 'bg-slate-300 dark:bg-slate-600'}`}><span className={`block w-4 h-4 bg-white rounded-full transition-transform ${goalNotifications ? 'translate-x-6':''}`}></span></button></div>
+                            <div className="flex justify-between items-center"><div><label className="text-slate-600 dark:text-slate-300">Enable Daily Journaling Reminders</label><p className="text-xs text-slate-500">Feature in development</p></div><button onClick={() => setJournalNotifications(!journalNotifications)} className={`w-12 h-6 rounded-full flex items-center px-1 transition-colors ${journalNotifications ? 'bg-pink-500' : 'bg-slate-300 dark:bg-slate-600'}`}><span className={`block w-4 h-4 bg-white rounded-full transition-transform ${journalNotifications ? 'translate-x-6':''}`}></span></button></div>
+                            { (goalNotifications || journalNotifications) && <div className="animate-fade-in-fast"><label htmlFor="notificationTime" className="block text-sm font-medium text-slate-600 dark:text-slate-400">Preferred Notification Time</label><input id="notificationTime" type="time" value={notificationTime} onChange={(e) => setNotificationTime(e.target.value)} className="mt-1 block w-full max-w-xs bg-slate-100 dark:bg-slate-700 border-transparent rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/></div> }
+                        </div>
+                        <div className="flex justify-end mt-6"><button onClick={handleAdvancedSave} className="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition-colors">Save Advanced</button></div>
+                    </div>
+                    <div className="mt-auto text-center"><p className="text-xs text-slate-500 dark:text-slate-400">User ID:</p><p className="text-xs text-slate-400 dark:text-slate-500 break-all mt-1">{user?.uid || 'N/A'}</p></div>
+                </div>
+            );
+        };
+        
         const JournalPage = ({ journals, db, user, openDevModal, goals, requestConfirmation }) => {
             const [newTitle, setNewTitle] = useState('');
             const [newEntry, setNewEntry] = useState('');
@@ -202,144 +272,32 @@ const DashboardPage = ({ goals, journals, onNavigate, settings }) => {
             const [suggestedPrompt, setSuggestedPrompt] = useState('');
             const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
             const [editingJournal, setEditingJournal] = useState(null);
-
             const journalCollectionPath = `artifacts/${appId}/users/${user.uid}/journals`;
-            
             const promptCategories = ['Contemplative', 'Creative', 'Funny', 'Spiritual'];
             const moods = { '😊': 'Happy', '😌': 'Content', '😐': 'Neutral', '🤔': 'Unsure', '😢': 'Sad', '😠': 'Angry' };
-            
-            const handleAddEntry = async (e) => {
-                e.preventDefault();
-                if (newEntry.trim() === '') return;
-                setIsLoadingPrompt(true);
-                
-                let finalTitle = newTitle.trim();
-
-                try {
-                    // Only call the AI if the user left the title blank
-                    if (finalTitle === '') {
-                        const titlePrompt = `Analyze this journal entry and create a short, evocative title (3-5 words). Return only the title. Entry: "${newEntry}"`;
-                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
-                        const response = await fetch(apiUrl, {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ contents: [{ parts: [{ text: titlePrompt }] }]})
-                        });
-                        const data = await response.json();
-                        finalTitle = data.candidates?.[0]?.content?.parts?.[0]?.text?.replace(/"/g, '').trim() || "Journal Entry";
-                    }
-                    
-                    await addDoc(collection(db, journalCollectionPath), {
-                        title: finalTitle, // Use the final title here
-                        text: newEntry,
-                        mood: mood,
-                        createdAt: serverTimestamp()
-                    });
-
-                    // Reset all form fields
-                    setNewTitle('');
-                    setNewEntry('');
-                    setMood(null);
-                } catch (error) {
-                    console.error("Error adding journal entry: ", error);
-                } finally {
-                    setIsLoadingPrompt(false);
-                }
-            };
-            
-            const handleSaveEdit = async (id, updatedData) => {
-                try {
-                    await updateDoc(doc(db, journalCollectionPath, id), {
-                        ...updatedData,
-                        editedAt: serverTimestamp()
-                    });
-                    setEditingJournal(null);
-                } catch(e) { console.error("Error saving edit: ", e)}
-            };
-
-            const handleDeleteEntry = (id, title) => {
-                requestConfirmation(
-                    'Delete Journal Entry?',
-                    `Are you sure you want to permanently delete "${title}"? This action cannot be undone.`,
-                    async () => {
-                        try {
-                            await deleteDoc(doc(db, journalCollectionPath, id));
-                        } catch (error) {
-                            console.error("Error deleting journal entry: ", error);
-                        }
-                    }
-                );
-            };
-            
-            const startAudioRecording = () => {
-                openDevModal("Feature In Development", "Audio journaling with automatic transcription is coming soon!");
-            };
-            
-            const getAIPrompt = async (category) => {
-                setIsLoadingPrompt(true);
-                const activeGoals = goals.filter(g => g.status === 'active').map(g => g.title).join(', ');
-                const prompt = `Generate a single, ${category.toLowerCase()} journal prompt. Keep it concise, open-ended, and thought-provoking. For context, I'm working on goals like: ${activeGoals}.`;
-                
-                try {
-                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
-                     const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }]})
-                    });
-                    const data = await response.json();
-                    const aiPrompt = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (aiPrompt) {
-                        setSuggestedPrompt(aiPrompt.replace(/"/g, ''));
-                    }
-                } catch (error) {
-                    console.error("AI Prompt generation failed: ", error);
-                } finally {
-                    setIsLoadingPrompt(false);
-                }
-            };
-
-            const filteredJournals = useMemo(() => {
-                return journals.filter(entry => {
-                    const searchTermMatch = (entry.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || (entry.text?.toLowerCase() || '').includes(searchTerm.toLowerCase());
-                    const moodMatch = moodFilter === 'all' || entry.mood === moodFilter;
-                    return searchTermMatch && moodMatch;
-                });
-            }, [journals, searchTerm, moodFilter]);
-
-
+            const handleAddEntry = async (e) => { e.preventDefault(); if (newEntry.trim() === '') return; setIsLoadingPrompt(true); let finalTitle = newTitle.trim(); try { if (finalTitle === '') { const titlePrompt = `Analyze this journal entry and create a short, evocative title (3-5 words). Return only the title. Entry: "${newEntry}"`; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`; const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: titlePrompt }] }]}) }); const data = await response.json(); finalTitle = data.candidates?.[0]?.content?.parts?.[0]?.text?.replace(/"/g, '').trim() || "Journal Entry"; } await addDoc(collection(db, journalCollectionPath), { title: finalTitle, text: newEntry, mood: mood, createdAt: serverTimestamp() }); setNewTitle(''); setNewEntry(''); setMood(null); } catch (error) { console.error("Error adding journal entry: ", error); } finally { setIsLoadingPrompt(false); } };
+            const handleSaveEdit = async (id, updatedData) => { try { await updateDoc(doc(db, journalCollectionPath, id), { ...updatedData, editedAt: serverTimestamp() }); setEditingJournal(null); } catch(e) { console.error("Error saving edit: ", e)} };
+            const handleDeleteEntry = (id, title) => { requestConfirmation( 'Delete Journal Entry?', `Are you sure you want to permanently delete "${title}"? This action cannot be undone.`, async () => { try { await deleteDoc(doc(db, journalCollectionPath, id)); } catch (error) { console.error("Error deleting journal entry: ", error); } } ); };
+            const startAudioRecording = () => { openDevModal("Feature In Development", "Audio journaling with automatic transcription is coming soon!"); };
+            const getAIPrompt = async (category) => { setIsLoadingPrompt(true); const activeGoals = goals.filter(g => g.status === 'active').map(g => g.title).join(', '); const prompt = `Generate a single, ${category.toLowerCase()} journal prompt. Keep it concise, open-ended, and thought-provoking. For context, I'm working on goals like: ${activeGoals}.`; try { const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`; const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }]}) }); const data = await response.json(); const aiPrompt = data.candidates?.[0]?.content?.parts?.[0]?.text; if (aiPrompt) { setSuggestedPrompt(aiPrompt.replace(/"/g, '')); } } catch (error) { console.error("AI Prompt generation failed: ", error); } finally { setIsLoadingPrompt(false); } };
+            const filteredJournals = useMemo(() => { return journals.filter(entry => { const searchTermMatch = (entry.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || (entry.text?.toLowerCase() || '').includes(searchTerm.toLowerCase()); const moodMatch = moodFilter === 'all' || entry.mood === moodFilter; return searchTermMatch && moodMatch; }); }, [journals, searchTerm, moodFilter]);
             return (
                 <div className="animate-fade-in">
                     <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Your Journal</h1>
-                    
-                    {editingJournal ? (
-                        <JournalModal journal={editingJournal} onSave={handleSaveEdit} onClose={() => setEditingJournal(null)} moods={moods} />
-                    ) : (
+                    {editingJournal ? ( <JournalModal journal={editingJournal} onSave={handleSaveEdit} onClose={() => setEditingJournal(null)} moods={moods} /> ) : (
                         <>
                             <div className="mb-6 bg-slate-100 dark:bg-slate-800 p-4 rounded-lg">
                                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">{isLoadingPrompt ? "Thinking..." : "Need a spark?"}</p>
                                 <p className="italic text-gray-800 dark:text-slate-200 min-h-[2rem]">{!isLoadingPrompt && `"${suggestedPrompt}"`}</p>
-                                <div className="mt-2 flex flex-wrap gap-2">{promptCategories.map(cat => (<button key={cat} onClick={() => getAIPrompt(cat)} disabled={isLoadingPrompt} className="text-xs px-3 py-1 bg-white dark:bg-slate-700 rounded-full hover:bg-pink-100 dark:hover:bg-pink-900/50 disabled:opacity-50">{cat}</button>))}</div>
-                            </div>
-        
-                            <form onSubmit={handleAddEntry} className="mb-8 space-y-4">
-                                <input
-                                    type="text"
-                                    value={newTitle}
-                                    onChange={(e) => setNewTitle(e.target.value)}
-                                    placeholder="Title (optional, AI will generate if blank)"
-                                    className="w-full bg-white dark:bg-slate-800 p-4 rounded-lg border-2 border-transparent focus:border-pink-500 focus:outline-none transition-colors"
-                                />
-                                <textarea
-                                    value={newEntry}
-                                    onChange={(e) => setNewEntry(e.target.value)}
-                                    placeholder="What's on your mind today?"
-                                    rows="4"
-                                    className="w-full bg-white dark:bg-slate-800 p-4 rounded-lg border-2 border-transparent focus:border-pink-500 focus:outline-none transition-colors"
-                                    required
-                                ></textarea>
-                                <div className="flex items-center gap-2">
-                                    {Object.keys(moods).map(m => (<button type="button" key={m} onClick={() => setMood(m)} className={`text-2xl p-1 rounded-full transition-transform duration-200 ${mood === m ? 'bg-pink-200 dark:bg-pink-800/50 scale-125' : 'hover:scale-110'}`}>{m}</button>))}
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    {/* FIX: Added dark mode text color */}
+                                    {promptCategories.map(cat => (<button key={cat} onClick={() => getAIPrompt(cat)} disabled={isLoadingPrompt} className="text-xs px-3 py-1 bg-white dark:bg-slate-700 rounded-full hover:bg-pink-100 dark:hover:bg-pink-900/50 disabled:opacity-50 text-gray-800 dark:text-slate-200">{cat}</button>))}
                                 </div>
+                            </div>
+                            <form onSubmit={handleAddEntry} className="mb-8 space-y-4">
+                                <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Title (optional, AI will generate if blank)" className="w-full bg-white dark:bg-slate-800 p-4 rounded-lg border-2 border-transparent focus:border-pink-500 focus:outline-none transition-colors"/>
+                                <textarea value={newEntry} onChange={(e) => setNewEntry(e.target.value)} placeholder="What's on your mind today?" rows="4" className="w-full bg-white dark:bg-slate-800 p-4 rounded-lg border-2 border-transparent focus:border-pink-500 focus:outline-none transition-colors" required></textarea>
+                                <div className="flex items-center gap-2">{Object.keys(moods).map(m => (<button type="button" key={m} onClick={() => setMood(m)} className={`text-2xl p-1 rounded-full transition-transform duration-200 ${mood === m ? 'bg-pink-200 dark:bg-pink-800/50 scale-125' : 'hover:scale-110'}`}>{m}</button>))}</div>
                                 <div className="flex justify-between items-center">
                                     <button type="button" onClick={startAudioRecording} className="flex items-center space-x-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600"><Icon name="microphone" className="w-5 h-5"/><span>Record Audio</span></button>
                                     <button type="submit" disabled={isLoadingPrompt} className="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50">{isLoadingPrompt ? "Saving..." : "Save Entry"}</button>
@@ -347,43 +305,299 @@ const DashboardPage = ({ goals, journals, onNavigate, settings }) => {
                             </form>
                         </>
                     )}
-
                     <div className="mb-6 flex gap-4">
-                        <input 
-                            type="text"
-                            placeholder="Search journal entries..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-800 p-3 rounded-lg border-2 border-transparent focus:border-pink-500 focus:outline-none"
-                        />
-                         <select onChange={(e) => setMoodFilter(e.target.value)} value={moodFilter} className="bg-white dark:bg-slate-800 p-3 rounded-lg border-2 border-transparent focus:border-pink-500 focus:outline-none">
+                        <input type="text" placeholder="Search journal entries..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-white dark:bg-slate-800 p-3 rounded-lg border-2 border-transparent focus:border-pink-500 focus:outline-none"/>
+                         {/* FIX: Added dark mode text color */}
+                        <select onChange={(e) => setMoodFilter(e.target.value)} value={moodFilter} className="bg-white dark:bg-slate-800 p-3 rounded-lg border-2 border-transparent focus:border-pink-500 focus:outline-none text-gray-800 dark:text-slate-200">
                              <option value="all">All Moods</option>
                              {Object.entries(moods).map(([emoji, name]) => <option key={emoji} value={emoji}>{emoji} {name}</option>)}
                          </select>
                     </div>
+                    <div className="space-y-4">{filteredJournals.length > 0 ? filteredJournals.map(entry => ( <JournalItem key={entry.id} journal={entry} onEdit={() => setEditingJournal(entry)} onDelete={handleDeleteEntry} searchTerm={searchTerm} /> )) : ( <p className="text-center text-slate-500 dark:text-slate-400 py-10">No journal entries found.</p> )}</div>
+                </div>
+            );
+        };
+        
+        const JournalItem = ({ journal, onEdit, onDelete, searchTerm }) => {
+            const [isMinimized, setIsMinimized] = useState(true);
+            return (
+                <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md cursor-pointer" onClick={() => setIsMinimized(!isMinimized)}>
+                    <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-3">
+                            {journal.mood && <span className="text-2xl">{journal.mood}</span>}
+                            <div>
+                                <h3 className="font-bold text-gray-900 dark:text-white"><Highlight text={journal.title} highlight={searchTerm} /></h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">Created: {formatDate(journal.createdAt)} {journal.editedAt && `(Edited: ${formatDate(journal.editedAt)})`}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center">
+                            <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="p-1 text-slate-400 hover:text-blue-500"><Icon name="edit" className="w-4 h-4" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); onDelete(journal.id, journal.title); }} className="p-1 text-slate-400 hover:text-red-500"><Icon name="trash" className="w-4 h-4" /></button>
+                        </div>
+                    </div>
+                    {!isMinimized && <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 text-gray-800 dark:text-slate-300"><p className="whitespace-pre-wrap"><Highlight text={journal.text} highlight={searchTerm} /></p></div>}
+                </div>
+            );
+        };
 
-                    <div className="space-y-4">
-                        {filteredJournals.length > 0 ? filteredJournals.map(entry => (
-                           <JournalItem 
-                            key={entry.id} 
-                            journal={entry} 
-                            onEdit={() => setEditingJournal(entry)} 
-                            onDelete={handleDeleteEntry}
-                            searchTerm={searchTerm}
-                            moods={moods}
-                           />
-                        )) : (
-                             <p className="text-center text-slate-500 dark:text-slate-400 py-10">No journal entries found.</p>
-                        )}
+        const JournalModal = ({ journal, onSave, onClose, moods }) => {
+            const [title, setTitle] = useState(journal.title);
+            const [text, setText] = useState(journal.text);
+            const [mood, setMood] = useState(journal.mood);
+            return (
+                <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 animate-fade-in-fast">
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-2xl w-full max-w-lg m-4 max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Edit Journal Entry</h2>
+                        <div><label className="block text-sm font-medium text-gray-800 dark:text-slate-300">Title</label><input type="text" value={title} onChange={e => setTitle(e.target.value)} className="mt-1 w-full bg-slate-100 dark:bg-slate-700 rounded-md p-2"/></div>
+                        <div className="mt-4"><label className="block text-sm font-medium text-gray-800 dark:text-slate-300">Entry</label><textarea value={text} onChange={e => setText(e.target.value)} rows="6" className="mt-1 w-full bg-slate-100 dark:bg-slate-700 rounded-md p-2"/></div>
+                        <div className="mt-4">
+                            <label className="block text-sm font-medium text-gray-800 dark:text-slate-300">Mood</label>
+                            <div className="mt-2 flex items-center gap-2">{Object.keys(moods).map(m => (<button type="button" key={m} onClick={() => setMood(m)} className={`text-2xl p-1 rounded-full transition-transform duration-200 ${mood === m ? 'bg-pink-200 dark:bg-pink-800/50 scale-125' : 'hover:scale-110'}`}>{m}</button>))}</div>
+                        </div>
+                        <div className="flex justify-end gap-4 mt-6">
+                            <button onClick={onClose} className="px-4 py-2 bg-slate-200 dark:bg-slate-600 rounded-lg">Cancel</button>
+                            <button onClick={() => onSave(journal.id, {title, text, mood})} className="px-4 py-2 bg-pink-600 text-white rounded-lg">Save</button>
+                        </div>
                     </div>
                 </div>
             );
         };
-        const JournalModal = ({ journal, onSave, onClose, moods }) => { const [title, setTitle] = useState(journal.title); const [text, setText] = useState(journal.text); const [mood, setMood] = useState(journal.mood); return ( <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 animate-fade-in-fast"> <div className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-2xl w-full max-w-lg m-4 max-h-[90vh] overflow-y-auto"> <h2 className="text-xl font-bold mb-4">Edit Journal Entry</h2> <div><label className="block text-sm font-medium">Title</label><input type="text" value={title} onChange={e => setTitle(e.target.value)} className="mt-1 w-full bg-slate-100 dark:bg-slate-700 rounded-md p-2"/></div> <div className="mt-4"><label className="block text-sm font-medium">Entry</label><textarea value={text} onChange={e => setText(e.target.value)} rows="6" className="mt-1 w-full bg-slate-100 dark:bg-slate-700 rounded-md p-2"/></div> <div className="mt-4"> <label className="block text-sm font-medium">Mood</label> <div className="mt-2 flex items-center gap-2">{Object.keys(moods).map(m => (<button type="button" key={m} onClick={() => setMood(m)} className={`text-2xl p-1 rounded-full transition-transform duration-200 ${mood === m ? 'bg-pink-200 dark:bg-pink-800/50 scale-125' : 'hover:scale-110'}`}>{m}</button>))}</div> </div> <div className="flex justify-end gap-4 mt-6"> <button onClick={onClose} className="px-4 py-2 bg-slate-200 dark:bg-slate-600 rounded-lg">Cancel</button> <button onClick={() => onSave(journal.id, {title, text, mood})} className="px-4 py-2 bg-pink-600 text-white rounded-lg">Save</button> </div> </div> </div> ); };
         const ChatPage = ({ goals, journals, db, user }) => { const [messages, setMessages] = useState([{ role: 'model', parts: [{ text: "Hey! It's Memory. What's on your mind? We can talk about your goals or just whatever's up." }] }]); const [userInput, setUserInput] = useState(''); const [isLoading, setIsLoading] = useState(false); const [isSaving, setIsSaving] = useState(false); const [showSaveConfirmation, setShowSaveConfirmation] = useState(false); const chatContainerRef = useRef(null); const journalCollectionPath = `artifacts/${appId}/users/${user.uid}/journals`; useEffect(() => { if (chatContainerRef.current) { chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight; } }, [messages]); const createSystemInstruction = useCallback(() => { let context = "You are Memory, a supportive AI assistant. Your tone is casual and personal. Use the provided context for a natural conversation.\n\nContext about me:\n"; const activeGoals = goals.filter(g => g.status === 'active').map(g => g.title); if (activeGoals.length > 0) context += `I'm working on these goals: ${activeGoals.join(', ')}.\n`; const recentJournals = journals.slice(0, 5).map(j => `"${j.text.substring(0, 80)}..."`); if (recentJournals.length > 0) context += `Recent journal snippets: ${recentJournals.join('; ')}\n`; return { parts: [{ text: context }] }; }, [goals, journals]); const handleSaveToJournal = async (text) => { if (!text || isSaving) return; setIsSaving(true); try { const titlePrompt = `Based on this chat snippet, create a short, evocative title (3-5 words). Only return the title. Snippet: "${text}"`; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`; const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: titlePrompt }] }]}) }); const data = await response.json(); const aiTitle = data.candidates?.[0]?.content?.parts?.[0]?.text?.replace(/"/g, '').trim() || "Chat with Memory"; await addDoc(collection(db, journalCollectionPath), { title: aiTitle, text: `From my chat with Memory:\n\n"${text}"`, createdAt: serverTimestamp() }); setShowSaveConfirmation(true); setTimeout(() => setShowSaveConfirmation(false), 2000); } catch (error) { console.error("Error saving to journal:", error); } finally { setTimeout(() => setIsSaving(false), 3000); } }; const handleSendMessage = async () => { if (userInput.trim() === '' || isLoading) return; const newMessages = [...messages, { role: 'user', parts: [{ text: userInput }] }]; setMessages(newMessages); setUserInput(''); setIsLoading(true); const apiPayload = { contents: newMessages, tools: [{ "google_search": {} }], systemInstruction: createSystemInstruction() }; try { const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`; const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(apiPayload) }); if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error?.message || "API request failed"); } const data = await response.json(); const modelResponse = data.candidates?.[0]?.content?.parts?.[0]?.text; if (modelResponse) { setMessages(prev => [...prev, { role: 'model', parts: [{ text: modelResponse }] }]); } else { throw new Error("Received an empty response from the AI."); } } catch (error) { console.error("Gemini API call failed:", error); setMessages(prev => [...prev, { role: 'model', parts: [{ text: `Oops, something went wrong. Error: ${error.message}` }] }]); } finally { setIsLoading(false); } }; return ( <div className="flex flex-col h-[calc(100vh-80px)] bg-white dark:bg-slate-800 rounded-xl shadow-2xl animate-fade-in relative"> {showSaveConfirmation && <div className="absolute top-4 right-4 bg-green-500 text-white text-sm px-3 py-1 rounded-full animate-fade-in-fast">Saved to Journal!</div>} <div className="p-3 border-b border-slate-200 dark:border-slate-700 flex items-center space-x-2"><Icon name="brain" className="w-6 h-6 text-pink-500" /><h1 className="text-lg font-bold text-gray-900 dark:text-white">Chat with Memory</h1></div> <div ref={chatContainerRef} className="flex-1 p-6 space-y-6 overflow-y-auto"> {messages.map((msg, index) => ( <div key={index} className={`flex items-start gap-3 group ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}> {msg.role === 'model' && <div className="w-8 h-8 rounded-full bg-pink-600 flex-shrink-0 flex items-center justify-center font-bold text-sm text-white">M</div>} <div className={`max-w-xl p-3 rounded-2xl relative ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-200 dark:bg-slate-700 text-gray-900 dark:text-white rounded-bl-none'}`}> <p className="whitespace-pre-wrap text-sm sm:text-base">{msg.parts[0].text}</p> {msg.role === 'model' && index > 0 && <button onClick={() => handleSaveToJournal(msg.parts[0].text)} disabled={isSaving} className="absolute -top-2 -right-2 p-1 bg-white dark:bg-slate-600 rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"><Icon name="bookmark" className="w-4 h-4 text-pink-500"/></button>} </div> </div> ))} {isLoading && <div className="flex items-start gap-3 justify-start"><div className="w-8 h-8 rounded-full bg-pink-600 flex-shrink-0 flex items-center justify-center font-bold text-sm text-white">M</div><div className="max-w-xl p-4 rounded-2xl bg-slate-200 dark:bg-slate-700 rounded-bl-none"><div className="flex items-center space-x-2"><div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse"></div><div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse [animation-delay:0.2s]"></div><div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse [animation-delay:0.4s]"></div></div></div></div>} </div> <div className="p-4 border-t border-slate-200 dark:border-slate-700"> <div className="flex items-center bg-slate-100 dark:bg-slate-700 rounded-lg p-1"> <input type="text" value={userInput} onChange={(e) => setUserInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()} placeholder="Ask Memory for advice..." className="flex-1 bg-transparent px-3 py-2 focus:outline-none" disabled={isLoading}/> <button onClick={handleSendMessage} disabled={isLoading} className="p-2 bg-pink-600 rounded-md text-white disabled:bg-slate-500"><Icon name="send" className="w-5 h-5"/></button> </div> </div> </div> ); };
-        const GoalModal = ({ goal, onClose, onSave }) => { const [title, setTitle] = useState(goal?.title || ''); const [description, setDescription] = useState(goal?.description || ''); const [type, setType] = useState(goal?.type || 'aspirational'); const [deadline, setDeadline] = useState(goal?.deadline ? timestampToDateInput(goal.deadline) : ''); const [currentValue, setCurrentValue] = useState(goal?.currentValue || 0); const [targetValue, setTargetValue] = useState(goal?.targetValue || 0); const [tags, setTags] = useState(goal?.tags || []); const [tagInput, setTagInput] = useState(''); const handleTagInput = (e) => { if (e.key === 'Enter' && tagInput.trim() !== '') { e.preventDefault(); if (!tags.includes(tagInput.trim())) setTags([...tags, tagInput.trim()]); setTagInput(''); } }; const removeTag = (tagToRemove) => setTags(tags.filter(tag => tag !== tagToRemove)); const handleSubmit = (e) => { e.preventDefault(); onSave({ title, description, type, deadline: type === 'timed' ? deadline : null, currentValue: Number(currentValue), targetValue: Number(targetValue), tags }); }; return ( <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 animate-fade-in-fast"> <div className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-2xl w-full max-w-lg m-4 max-h-[90vh] overflow-y-auto"> <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">{goal ? 'Edit Goal' : 'Add New Goal'}</h2> <form onSubmit={handleSubmit} className="space-y-4"> <div><label htmlFor="title" className="block text-sm font-medium">Title</label><input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="mt-1 w-full bg-slate-100 dark:bg-slate-700 rounded-md p-2"/></div> <div><label htmlFor="description" className="block text-sm font-medium">Description</label><textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows="3" className="mt-1 w-full bg-slate-100 dark:bg-slate-700 rounded-md p-2"></textarea></div> <div> <label className="block text-sm font-medium">Tags</label> <div className="mt-1 flex flex-wrap gap-2 items-center bg-slate-100 dark:bg-slate-700 p-2 rounded-md"> {tags.map(tag => (<span key={tag} className="flex items-center bg-pink-100 dark:bg-pink-900/50 text-pink-800 dark:text-pink-300 text-xs font-medium px-2.5 py-0.5 rounded-full">{tag}<button type="button" onClick={() => removeTag(tag)} className="ml-1.5 -mr-1"><Icon name="x" className="w-3 h-3"/></button></span>))} <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={handleTagInput} placeholder="Add a tag..." className="bg-transparent focus:outline-none flex-grow"/> </div> </div> <div> <label className="block text-sm font-medium">Goal Type</label> <div className="mt-2 grid grid-cols-2 gap-4"> <button type="button" onClick={() => setType('aspirational')} className={`p-3 rounded-lg border-2 ${type==='aspirational' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-slate-200 dark:border-slate-600'}`}>Aspirational</button> <button type="button" onClick={() => setType('timed')} className={`p-3 rounded-lg border-2 ${type==='timed' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-slate-200 dark:border-slate-600'}`}>Timed</button> </div> </div> {type === 'timed' && <div className="animate-fade-in-fast"><label htmlFor="deadline" className="block text-sm font-medium">Deadline</label><input id="deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="mt-1 w-full bg-slate-100 dark:bg-slate-700 rounded-md p-2"/></div>} <div> <label className="block text-sm font-medium">Progress (Optional)</label> <div className="mt-2 flex items-center gap-4"> <input type="number" value={currentValue} onChange={e=>setCurrentValue(e.target.value)} placeholder="Current" className="w-full bg-slate-100 dark:bg-slate-700 rounded-md p-2"/> <span className="text-slate-400">/</span> <input type="number" value={targetValue} onChange={e=>setTargetValue(e.target.value)} placeholder="Target" className="w-full bg-slate-100 dark:bg-slate-700 rounded-md p-2"/> </div> </div> <div className="flex justify-end space-x-4 pt-4"> <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 dark:bg-slate-600 rounded-lg">Cancel</button> <button type="submit" className="px-4 py-2 bg-pink-600 text-white rounded-lg">{goal?.id ? 'Save Changes' : 'Add Goal'}</button> </div> </form> </div> </div> ); };
-        const GoalItem = ({ goal, onEdit, onDelete, onToggleStatus, onToggleFavorite, onMove, onUpdateGoal }) => { const [isMinimized, setIsMinimized] = useState(true); const [subGoalInput, setSubGoalInput] = useState(''); const isCompleted = goal.status === 'completed'; const isExpired = goal.type === 'timed' && goal.deadline && goal.deadline.toDate() < new Date() && !isCompleted; const progress = goal.targetValue > 0 ? ((goal.currentValue || 0) / goal.targetValue) * 100 : 0; const handleIncrementProgress = (e) => { e.stopPropagation(); const newValue = (goal.currentValue || 0) + 1; if (newValue <= goal.targetValue) onUpdateGoal(goal.id, { currentValue: newValue }); }; const handleAddSubGoal = (e) => { e.preventDefault(); if (subGoalInput.trim() === '') return; onUpdateGoal(goal.id, { subGoals: arrayUnion({ id: crypto.randomUUID(), title: subGoalInput.trim(), completed: false }) }); setSubGoalInput(''); }; const handleToggleSubGoal = (subGoal) => { onUpdateGoal(goal.id, { subGoals: (goal.subGoals || []).map(sg => sg.id === subGoal.id ? {...sg, completed: !sg.completed} : sg) }); }; const handleDeleteSubGoal = (subGoal) => { onUpdateGoal(goal.id, { subGoals: arrayRemove(subGoal) }); }; return ( <div className={`bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg border-l-4 transition-all duration-300 ${isCompleted ? 'border-green-500 opacity-70' : isExpired ? 'border-red-500' : 'border-pink-500'}`}> <div className="flex items-start justify-between cursor-pointer" onClick={() => setIsMinimized(!isMinimized)}> <div className="flex items-start gap-3 overflow-hidden"> <button onClick={(e) => { e.stopPropagation(); onToggleStatus(goal); }} className="p-1 text-slate-400 hover:text-pink-500 flex-shrink-0" title={isCompleted ? 'Mark as Active' : 'Mark as Complete'}><Icon name={isCompleted ? 'check' : 'uncheck'} className={`w-6 h-6 ${isCompleted ? 'text-green-500':''}`}/></button> <div> <h3 className={`text-lg font-bold truncate ${isCompleted ? 'line-through' : ''}`}>{goal.title}</h3> {goal.targetValue > 0 && <div className="flex items-center gap-2 mt-1"><div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full"><div className="h-2 bg-gradient-to-r from-pink-500 to-orange-400 rounded-full" style={{width: `${progress}%`}}></div></div><span className="text-xs text-slate-500">{Math.round(progress)}%</span></div>} </div> </div> <div className="flex items-center space-x-2 flex-shrink-0 ml-2"> {goal.targetValue > 0 && !isCompleted && <button onClick={handleIncrementProgress} className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-full text-pink-500 hover:bg-pink-100 dark:hover:bg-pink-900/50"><Icon name="plus" className="w-4 h-4" /></button>} <button className="p-1 text-slate-400"><Icon name={isMinimized ? 'chevronDown' : 'chevronUp'} className="w-5 h-5"/></button> </div> </div> {!isMinimized && ( <div className="mt-4 pl-9 animate-fade-in-fast space-y-4"> <p className="text-slate-600 dark:text-slate-400">{goal.description || "No description."}</p> <div> <h4 className="font-semibold text-sm mb-2">Sub-Goals</h4> <div className="space-y-2"> {(goal.subGoals || []).map(sg => ( <div key={sg.id} className="flex items-center justify-between group"> <div onClick={() => handleToggleSubGoal(sg)} className="flex items-center gap-2 cursor-pointer"><Icon name={sg.completed ? 'check' : 'uncheck'} className={`w-5 h-5 ${sg.completed ? 'text-green-500' : 'text-slate-400'}`}/><span className={`${sg.completed ? 'line-through text-slate-500' : ''}`}>{sg.title}</span></div> <button onClick={() => handleDeleteSubGoal(sg)} className="opacity-0 group-hover:opacity-100"><Icon name="trash" className="w-4 h-4 text-red-500" /></button> </div> ))} </div> <form onSubmit={handleAddSubGoal} className="mt-2 flex gap-2"> <input type="text" value={subGoalInput} onChange={e => setSubGoalInput(e.target.value)} placeholder="Add a mini goal..." className="flex-grow bg-slate-100 dark:bg-slate-700 rounded-md border-transparent text-sm px-2 py-1 focus:ring-pink-500" /> <button type="submit" className="bg-pink-500 text-white rounded-md px-2 py-1 text-sm">Add</button> </form> </div> <div className="flex flex-wrap items-center justify-between gap-y-2 pt-2 border-t border-slate-200 dark:border-slate-700"> <div> {goal.type === 'timed' && <p className={`text-sm ${isExpired ? 'text-red-500 font-semibold' : 'text-slate-500'}`}>Deadline: {formatDate(goal.deadline)} {isExpired && "(Expired)"}</p>} {goal.tags?.length > 0 && <div className="flex flex-wrap gap-2 mt-2">{goal.tags.map(tag => <span key={tag} className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-2 py-1 rounded-full">{tag}</span>)}</div>} </div> <div className="flex items-center space-x-1"> {goal.favorite && <div className="flex"><button onClick={(e) => {e.stopPropagation(); onMove(goal, 'up');}} className="p-1 text-slate-400 hover:text-white"><Icon name="chevronUp" className="w-5 h-5"/></button><button onClick={(e) => {e.stopPropagation(); onMove(goal, 'down');}} className="p-1 text-slate-400 hover:text-white"><Icon name="chevronDown" className="w-5 h-5"/></button></div>} <button onClick={(e) => {e.stopPropagation(); onToggleFavorite(goal);}} className={`p-1 ${goal.favorite ? 'text-yellow-400' : 'text-slate-400 hover:text-yellow-400'}`} title="Favorite"><Icon name="star" className={`w-5 h-5 ${goal.favorite ? 'fill-current' : ''}`} /></button> <button onClick={(e) => {e.stopPropagation(); onEdit(goal);}} className="p-1 text-slate-400 hover:text-white" title="Edit"><Icon name="edit" className="w-5 h-5"/></button> <button onClick={(e) => {e.stopPropagation(); onDelete(goal.id, goal.title);}} className="p-1 text-red-500 hover:text-red-400" title="Delete"><Icon name="trash" className="w-5 h-5"/></button> </div> </div> </div> )} </div> ); };
-        const GoalsPage = ({ goals, db, user, journals, requestConfirmation }) => { const [isModalOpen, setIsModalOpen] = useState(false); const [currentGoal, setCurrentGoal] = useState(null); const [isFilterOpen, setIsFilterOpen] = useState(false); const [sortBy, setSortBy] = useState('newest'); const [isAISuggesting, setIsAISuggesting] = useState(false); const [filters, setFilters] = useState({ status: 'all', deadline: 'all', favorite: 'all', tags: [] }); const goalsCollectionPath = `artifacts/${appId}/users/${user.uid}/goals`; const allTags = useMemo(() => Array.from(new Set(goals.flatMap(g => g.tags || []))), [goals]); const handleAISuggestion = async () => { setIsLoadingAISuggesting(true); const prompt = `I'm looking for a new goal. Based on my current goals (${goals.filter(g => g.status === 'active').map(g => g.title).join(', ')}) and recent journal entries (${journals.slice(0, 3).map(j => `"${j.text.substring(0, 80)}..."`).join('\n')}), suggest one actionable and specific new goal for me. Just provide the goal title.`; try { const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`; const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }]}) }); const data = await response.json(); const suggestion = data.candidates?.[0]?.content?.parts?.[0]?.text; if (suggestion) { handleOpenModal({ title: suggestion.replace(/"/g, '').trim() }); } } catch (error) { console.error("AI Goal suggestion failed: ", error); } finally { setIsAISuggesting(false); } }; const sortedAndFilteredGoals = useMemo(() => { const now = new Date(); return goals .filter(g => filters.status === 'all' || g.status === filters.status) .filter(g => filters.favorite === 'all' || g.favorite) .filter(g => filters.deadline === 'all' || (filters.deadline === 'upcoming' && g.deadline && g.deadline.toDate() >= now) || (filters.deadline === 'expired' && g.deadline && g.deadline.toDate() < now)) .filter(g => filters.tags.length === 0 || filters.tags.every(tag => g.tags?.includes(tag))) .sort((a, b) => { if (a.favorite !== b.favorite) return a.favorite ? -1 : 1; if (a.favorite) return (a.sortOrder || 0) - (b.sortOrder || 0); if (sortBy === 'oldest') return (a.createdAt?.toDate() || 0) - (b.createdAt?.toDate() || 0); if (sortBy === 'deadline') return (a.deadline?.toDate() || 0) - (b.deadline?.toDate() || 0); return (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0); }); }, [goals, filters, sortBy]); const handleFilterChange = (key, value) => setFilters(prev => ({...prev, [key]: value})); const handleTagToggle = (tag) => setFilters(prev => ({...prev, tags: prev.tags.includes(tag) ? prev.tags.filter(t => t !== tag) : [...prev.tags, tag]})); const handleOpenModal = (goal = null) => { setCurrentGoal(goal); setIsModalOpen(true); }; const handleCloseModal = () => { setIsModalOpen(false); setCurrentGoal(null); }; const handleSaveGoal = async (goalData) => { const dataToSave = { ...goalData, deadline: goalData.deadline ? dateToTimestamp(goalData.deadline) : null }; try { if (currentGoal?.id) { await updateDoc(doc(db, goalsCollectionPath, currentGoal.id), dataToSave); } else { await addDoc(collection(db, goalsCollectionPath), { ...dataToSave, status: 'active', favorite: false, sortOrder: 0, createdAt: serverTimestamp(), subGoals: [] }); } } catch (error) { console.error("Error saving goal: ", error); } finally { handleCloseModal(); } }; const handleDeleteGoal = (goalId, goalTitle) => { requestConfirmation('Delete Goal?', `Are you sure you want to permanently delete "${goalTitle}"? This cannot be undone.`, async () => { try { await deleteDoc(doc(db, goalsCollectionPath, goalId)); } catch (error) { console.error("Error deleting goal: ", error); } }); }; const handleUpdateGoal = async (goalId, data) => await updateDoc(doc(db, goalsCollectionPath, goalId), data); const toggleGoalStatus = async (goal) => await handleUpdateGoal(goal.id, { status: goal.status === 'active' ? 'completed' : 'active' }); const toggleFavorite = async (goal) => { const isFavoriting = !goal.favorite; const sortOrder = isFavoriting ? Math.max(0, ...goals.filter(g => g.favorite).map(g => g.sortOrder || 0)) + 1 : 0; await handleUpdateGoal(goal.id, { favorite: isFavoriting, sortOrder }); }; const moveFavorite = async (goal, direction) => { const favoritedGoals = goals.filter(g => g.favorite).sort((a,b) => (a.sortOrder || 0) - (b.sortOrder || 0)); const currentIndex = favoritedGoals.findIndex(g => g.id === goal.id); const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1; if (swapIndex >= 0 && swapIndex < favoritedGoals.length) { const otherGoal = favoritedGoals[swapIndex]; const batch = writeBatch(db); batch.update(doc(db, goalsCollectionPath, goal.id), { sortOrder: otherGoal.sortOrder }); batch.update(doc(db, goalsCollectionPath, otherGoal.id), { sortOrder: goal.sortOrder }); await batch.commit(); } }; return ( <div className="animate-fade-in"> <div className="flex justify-between items-center mb-6"> <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Goals</h1> <div className="flex items-center gap-2 sm:gap-4"> <button onClick={handleAISuggestion} disabled={isAISuggesting} className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 rounded-lg disabled:opacity-50"><Icon name="sparkles" className="w-5 h-5 text-pink-500"/><span>{isAISuggesting ? "Thinking..." : "Suggest Goal"}</span></button> <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 rounded-lg"><Icon name="filter" className="w-5 h-5"/><span className="hidden sm:inline">Filters</span></button> <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700"><Icon name="plus" className="w-5 h-5"/><span className="hidden sm:inline">New Goal</span></button> </div> </div> {isFilterOpen && ( <div className="bg-white dark:bg-slate-800 p-4 rounded-lg mb-6 animate-fade-in-fast space-y-4"> <div className="grid grid-cols-1 md:grid-cols-4 gap-4"> <div><label className="text-sm font-medium">Status</label><select onChange={(e) => handleFilterChange('status', e.target.value)} value={filters.status} className="mt-1 w-full rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-pink-500"><option value="all">All</option><option value="active">Active</option><option value="completed">Completed</option></select></div> <div><label className="text-sm font-medium">Deadline</label><select onChange={(e) => handleFilterChange('deadline', e.target.value)} value={filters.deadline} className="mt-1 w-full rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-pink-500"><option value="all">All</option><option value="upcoming">Upcoming</option><option value="expired">Expired</option></select></div> <div><label className="text-sm font-medium">Favorite</label><select onChange={(e) => handleFilterChange('favorite', e.target.value === 'favorited')} value={filters.favorite ? 'favorited' : 'all'} className="mt-1 w-full rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-pink-500"><option value="all">All</option><option value="favorited">Favorited</option></select></div> <div><label className="text-sm font-medium">Sort By</label><select onChange={(e) => setSortBy(e.target.value)} value={sortBy} className="mt-1 w-full rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-pink-500"><option value="newest">Newest</option><option value="oldest">Oldest</option><option value="deadline">Deadline</option></select></div> </div> {allTags.length > 0 && <div><label className="text-sm font-medium">Tags</label><div className="mt-2 flex flex-wrap gap-2">{allTags.map(tag => <button key={tag} onClick={() => handleTagToggle(tag)} className={`px-3 py-1 text-xs rounded-full ${filters.tags.includes(tag) ? 'bg-pink-500 text-white' : 'bg-slate-200 dark:bg-slate-700'}`}>{tag}</button>)}</div></div>} </div> )} <div className="space-y-4">{sortedAndFilteredGoals.length > 0 ? sortedAndFilteredGoals.map(goal => <GoalItem key={goal.id} goal={goal} onEdit={handleOpenModal} onDelete={handleDeleteGoal} onToggleStatus={toggleGoalStatus} onToggleFavorite={toggleFavorite} onMove={moveFavorite} onUpdateGoal={handleUpdateGoal}/>) : <p className="text-center text-slate-500 py-10">No goals match filters.</p>}</div> {isModalOpen && <GoalModal goal={currentGoal} onClose={handleCloseModal} onSave={handleSaveGoal} />} </div> ); };
+        const GoalModal = ({ goal, onClose, onSave }) => {
+            const [title, setTitle] = useState(goal?.title || '');
+            const [description, setDescription] = useState(goal?.description || '');
+            const [type, setType] = useState(goal?.type || 'aspirational');
+            const [deadline, setDeadline] = useState(goal?.deadline ? timestampToDateInput(goal.deadline) : '');
+            const [currentValue, setCurrentValue] = useState(goal?.currentValue || 0);
+            const [targetValue, setTargetValue] = useState(goal?.targetValue || 0);
+            const [tags, setTags] = useState(goal?.tags || []);
+            const [tagInput, setTagInput] = useState('');
+            const handleTagInput = (e) => { if (e.key === 'Enter' && tagInput.trim() !== '') { e.preventDefault(); if (!tags.includes(tagInput.trim())) setTags([...tags, tagInput.trim()]); setTagInput(''); } };
+            const removeTag = (tagToRemove) => setTags(tags.filter(tag => tag !== tagToRemove));
+            const handleSubmit = (e) => { e.preventDefault(); onSave({ title, description, type, deadline: type === 'timed' ? deadline : null, currentValue: Number(currentValue), targetValue: Number(targetValue), tags }); };
+            
+            return (
+                <div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 animate-fade-in-fast">
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-2xl w-full max-w-lg m-4 max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">{goal ? 'Edit Goal' : 'Add New Goal'}</h2>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* FIX: Added dark mode text colors to all labels */}
+                            <div><label htmlFor="title" className="block text-sm font-medium text-slate-600 dark:text-slate-300">Title</label><input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="mt-1 block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/></div>
+                            <div><label htmlFor="description" className="block text-sm font-medium text-slate-600 dark:text-slate-300">Description</label><textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows="3" className="mt-1 block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"></textarea></div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300">Tags</label>
+                                <div className="mt-1 flex flex-wrap gap-2 items-center bg-slate-100 dark:bg-slate-700 p-2 rounded-md">
+                                    {tags.map(tag => (<span key={tag} className="flex items-center bg-pink-100 dark:bg-pink-900/50 text-pink-800 dark:text-pink-300 text-xs font-medium px-2.5 py-0.5 rounded-full">{tag}<button type="button" onClick={() => removeTag(tag)} className="ml-1.5 -mr-1"><Icon name="x" className="w-3 h-3"/></button></span>))}
+                                    <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={handleTagInput} placeholder="Add a tag..." className="bg-transparent focus:outline-none flex-grow"/>
+                                </div>
+                            </div>
+                            <div>
+                               <label className="block text-sm font-medium text-slate-600 dark:text-slate-300">Goal Type</label>
+                               <div className="mt-2 grid grid-cols-2 gap-4">
+                                  {/* FIX: Added dark mode text colors to buttons */}
+                                  <button type="button" onClick={() => setType('aspirational')} className={`p-3 rounded-lg border-2 text-gray-800 dark:text-slate-200 ${type==='aspirational' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-slate-200 dark:border-slate-600'}`}>Aspirational</button>
+                                  <button type="button" onClick={() => setType('timed')} className={`p-3 rounded-lg border-2 text-gray-800 dark:text-slate-200 ${type==='timed' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-slate-200 dark:border-slate-600'}`}>Timed</button>
+                               </div>
+                            </div>
+                            {type === 'timed' && (<div className="animate-fade-in-fast"><label htmlFor="deadline" className="block text-sm font-medium text-slate-600 dark:text-slate-300">Deadline</label><input id="deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="mt-1 block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/></div>)}
+                             <div>
+                                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300">Progress (Optional)</label>
+                                <div className="mt-2 flex items-center gap-4">
+                                   <input type="number" value={currentValue} onChange={e=>setCurrentValue(e.target.value)} placeholder="Current" className="block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/>
+                                   <span className="text-slate-400">/</span>
+                                   <input type="number" value={targetValue} onChange={e=>setTargetValue(e.target.value)} placeholder="Target" className="block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/>
+                                </div>
+                            </div>
+                            <div className="flex justify-end space-x-4 pt-4">
+                                <button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 dark:bg-slate-600 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-700">Cancel</button>
+                                <button type="submit" className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700">{goal?.id ? 'Save Changes' : 'Add Goal'}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+            const GoalItem = ({ goal, onEdit, onDelete, onToggleStatus, onToggleFavorite, onMove, onUpdateGoal }) => {
+            const [isMinimized, setIsMinimized] = useState(true);
+            const [subGoalInput, setSubGoalInput] = useState('');
+            const isCompleted = goal.status === 'completed';
+            const isExpired = goal.type === 'timed' && goal.deadline && goal.deadline.toDate() < new Date() && !isCompleted;
+            const progress = goal.targetValue > 0 ? ((goal.currentValue || 0) / goal.targetValue) * 100 : 0;
+            const handleIncrementProgress = (e) => { e.stopPropagation(); const newValue = (goal.currentValue || 0) + 1; if (newValue <= goal.targetValue) onUpdateGoal(goal.id, { currentValue: newValue }); };
+            const handleAddSubGoal = (e) => { e.preventDefault(); if (subGoalInput.trim() === '') return; onUpdateGoal(goal.id, { subGoals: arrayUnion({ id: crypto.randomUUID(), title: subGoalInput.trim(), completed: false }) }); setSubGoalInput(''); };
+            const handleToggleSubGoal = (subGoal) => { onUpdateGoal(goal.id, { subGoals: (goal.subGoals || []).map(sg => sg.id === subGoal.id ? {...sg, completed: !sg.completed} : sg) }); };
+            const handleDeleteSubGoal = (subGoal) => { onUpdateGoal(goal.id, { subGoals: arrayRemove(subGoal) }); };
+            return (
+                <div className={`bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg border-l-4 transition-all duration-300 ${isCompleted ? 'border-green-500 opacity-70' : isExpired ? 'border-red-500' : 'border-pink-500'}`}>
+                    <div className="flex items-start justify-between cursor-pointer" onClick={() => setIsMinimized(!isMinimized)}>
+                        <div className="flex items-start gap-3 overflow-hidden">
+                            <button onClick={(e) => { e.stopPropagation(); onToggleStatus(goal); }} className="p-1 text-slate-400 hover:text-pink-500 flex-shrink-0" title={isCompleted ? 'Mark as Active' : 'Mark as Complete'}><Icon name={isCompleted ? 'check' : 'uncheck'} className={`w-6 h-6 ${isCompleted ? 'text-green-500':''}`}/></button>
+                            <div>
+                                {/* FIX: Added default text colors */}
+                                <h3 className={`text-lg font-bold truncate text-gray-900 dark:text-white ${isCompleted ? 'line-through' : ''}`}>{goal.title}</h3>
+                                {goal.targetValue > 0 && <div className="flex items-center gap-2 mt-1"><div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full"><div className="h-2 bg-gradient-to-r from-pink-500 to-orange-400 rounded-full" style={{width: `${progress}%`}}></div></div><span className="text-xs text-slate-500">{Math.round(progress)}%</span></div>}
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
+                            {goal.targetValue > 0 && !isCompleted && <button onClick={handleIncrementProgress} className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-full text-pink-500 hover:bg-pink-100 dark:hover:bg-pink-900/50"><Icon name="plus" className="w-4 h-4" /></button>}
+                            <button className="p-1 text-slate-400"><Icon name={isMinimized ? 'chevronDown' : 'chevronUp'} className="w-5 h-5"/></button>
+                        </div>
+                    </div>
+                    {!isMinimized && (
+                        <div className="mt-4 pl-9 animate-fade-in-fast space-y-4">
+                            <p className="text-slate-600 dark:text-slate-400">{goal.description || "No description."}</p>
+                            <div>
+                                {/* FIX: Added default text colors */}
+                                <h4 className="font-semibold text-sm mb-2 text-gray-800 dark:text-slate-200">Sub-Goals</h4>
+                                <div className="space-y-2">
+                                    {(goal.subGoals || []).map(sg => (
+                                        <div key={sg.id} className="flex items-center justify-between group">
+                                            <div onClick={() => handleToggleSubGoal(sg)} className="flex items-center gap-2 cursor-pointer">
+                                                <Icon name={sg.completed ? 'check' : 'uncheck'} className={`w-5 h-5 ${sg.completed ? 'text-green-500' : 'text-slate-400'}`}/>
+                                                {/* FIX: Added default text colors */}
+                                                <span className={`text-gray-800 dark:text-slate-300 ${sg.completed ? 'line-through text-slate-500' : ''}`}>{sg.title}</span>
+                                            </div>
+                                            <button onClick={() => handleDeleteSubGoal(sg)} className="opacity-0 group-hover:opacity-100"><Icon name="trash" className="w-4 h-4 text-red-500" /></button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <form onSubmit={handleAddSubGoal} className="mt-2 flex gap-2">
+                                    <input type="text" value={subGoalInput} onChange={e => setSubGoalInput(e.target.value)} placeholder="Add a mini goal..." className="flex-grow bg-slate-100 dark:bg-slate-700 rounded-md border-transparent text-sm px-2 py-1 focus:ring-pink-500" />
+                                    <button type="submit" className="bg-pink-500 text-white rounded-md px-2 py-1 text-sm">Add</button>
+                                </form>
+                            </div>
+                            <div className="flex flex-wrap items-center justify-between gap-y-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                                <div>
+                                    {goal.type === 'timed' && <p className={`text-sm ${isExpired ? 'text-red-500 font-semibold' : 'text-slate-500'}`}>Deadline: {formatDate(goal.deadline)} {isExpired && "(Expired)"}</p>}
+                                    {goal.tags?.length > 0 && <div className="flex flex-wrap gap-2 mt-2">{goal.tags.map(tag => <span key={tag} className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-2 py-1 rounded-full">{tag}</span>)}</div>}
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                    {goal.favorite && <div className="flex"><button onClick={(e) => {e.stopPropagation(); onMove(goal, 'up');}} className="p-1 text-slate-400 hover:text-white"><Icon name="chevronUp" className="w-5 h-5"/></button><button onClick={(e) => {e.stopPropagation(); onMove(goal, 'down');}} className="p-1 text-slate-400 hover:text-white"><Icon name="chevronDown" className="w-5 h-5"/></button></div>}
+                                    <button onClick={(e) => {e.stopPropagation(); onToggleFavorite(goal);}} className={`p-1 ${goal.favorite ? 'text-yellow-400' : 'text-slate-400 hover:text-yellow-400'}`} title="Favorite"><Icon name="star" className={`w-5 h-5 ${goal.favorite ? 'fill-current' : ''}`} /></button>
+                                    <button onClick={(e) => {e.stopPropagation(); onEdit(goal);}} className="p-1 text-slate-400 hover:text-white" title="Edit"><Icon name="edit" className="w-5 h-5"/></button>
+                                    <button onClick={(e) => {e.stopPropagation(); onDelete(goal.id, goal.title);}} className="p-1 text-red-500 hover:text-red-400" title="Delete"><Icon name="trash" className="w-5 h-5"/></button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+           
+        const GoalsPage = ({ goals, db, user, journals, requestConfirmation, openDevModal }) => {
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [currentGoal, setCurrentGoal] = useState(null);
+            const [isFilterOpen, setIsFilterOpen] = useState(false);
+            const [sortBy, setSortBy] = useState('newest');
+            const [isAISuggesting, setIsAISuggesting] = useState(false);
+            const [filters, setFilters] = useState({ status: 'all', deadline: 'all', favorite: 'all', tags: [] });
+
+            const goalsCollectionPath = `artifacts/${appId}/users/${user.uid}/goals`;
+            const allTags = useMemo(() => Array.from(new Set(goals.flatMap(g => g.tags || []))), [goals]);
+            
+            const handleAISuggestion = async () => {
+                setIsAISuggesting(true);
+                const activeGoals = goals.filter(g => g.status === 'active').map(g => g.title).join(', ');
+                const recentJournals = (journals || []).slice(0, 3).map(j => `"${j.text.substring(0, 80)}..."`).join('\n');
+                const prompt = `I'm looking for a new goal. Based on my current goals (${activeGoals}) and my recent journal entries (${recentJournals}), suggest one actionable and specific new goal for me. Just provide the goal title, nothing else.`;
+                try {
+                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;
+                     const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }]}) });
+                    const data = await response.json();
+                    const suggestion = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (suggestion) { handleOpenModal({ title: suggestion.replace(/"/g, '').trim() }); } 
+                    else { openDevModal("Suggestion Failed", "Memory couldn't come up with a suggestion right now. Try adding more journal entries for context!"); }
+                } catch (error) { console.error("AI Goal suggestion failed:", error); openDevModal("Suggestion Error", "An error occurred while trying to get a suggestion."); } 
+                finally { setIsAISuggesting(false); }
+            };
+
+            const sortedAndFilteredGoals = useMemo(() => { const now = new Date(); return goals .filter(g => filters.status === 'all' || g.status === filters.status) .filter(g => filters.favorite === 'all' || g.favorite) .filter(g => filters.deadline === 'all' || (filters.deadline === 'upcoming' && g.deadline && g.deadline.toDate() >= now) || (filters.deadline === 'expired' && g.deadline && g.deadline.toDate() < now)) .filter(g => filters.tags.length === 0 || filters.tags.every(tag => g.tags?.includes(tag))) .sort((a, b) => { if (a.favorite !== b.favorite) return a.favorite ? -1 : 1; if (a.favorite) return (a.sortOrder || 0) - (b.sortOrder || 0); if (sortBy === 'oldest') return (a.createdAt?.toDate() || 0) - (b.createdAt?.toDate() || 0); if (sortBy === 'deadline') return (a.deadline?.toDate() || 0) - (b.deadline?.toDate() || 0); return (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0); }); }, [goals, filters, sortBy]);
+            const handleFilterChange = (key, value) => setFilters(prev => ({...prev, [key]: value}));
+            const handleTagToggle = (tag) => setFilters(prev => ({...prev, tags: prev.tags.includes(tag) ? prev.tags.filter(t => t !== tag) : [...prev.tags, tag]}));
+            const handleOpenModal = (goal = null) => { setCurrentGoal(goal); setIsModalOpen(true); };
+            const handleCloseModal = () => { setIsModalOpen(false); setCurrentGoal(null); };
+            const handleSaveGoal = async (goalData) => { const dataToSave = { ...goalData, deadline: goalData.deadline ? dateToTimestamp(goalData.deadline) : null }; try { if (currentGoal?.id) { await updateDoc(doc(db, goalsCollectionPath, currentGoal.id), dataToSave); } else { await addDoc(collection(db, goalsCollectionPath), { ...dataToSave, status: 'active', favorite: false, sortOrder: 0, createdAt: serverTimestamp(), subGoals: [] }); } } catch (error) { console.error("Error saving goal: ", error); } finally { handleCloseModal(); } };
+            const handleDeleteGoal = (goalId, goalTitle) => { requestConfirmation('Delete Goal?', `Are you sure you want to permanently delete "${goalTitle}"? This cannot be undone.`, async () => { try { await deleteDoc(doc(db, goalsCollectionPath, goalId)); } catch (error) { console.error("Error deleting goal: ", error); } }); };
+            const handleUpdateGoal = async (goalId, data) => await updateDoc(doc(db, goalsCollectionPath, goalId), data);
+            const toggleGoalStatus = async (goal) => await handleUpdateGoal(goal.id, { status: goal.status === 'active' ? 'completed' : 'active' });
+            const toggleFavorite = async (goal) => { const isFavoriting = !goal.favorite; const sortOrder = isFavoriting ? Math.max(0, ...goals.filter(g => g.favorite).map(g => g.sortOrder || 0)) + 1 : 0; await handleUpdateGoal(goal.id, { favorite: isFavoriting, sortOrder }); };
+            const moveFavorite = async (goal, direction) => { const favoritedGoals = goals.filter(g => g.favorite).sort((a,b) => (a.sortOrder || 0) - (b.sortOrder || 0)); const currentIndex = favoritedGoals.findIndex(g => g.id === goal.id); const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1; if (swapIndex >= 0 && swapIndex < favoritedGoals.length) { const otherGoal = favoritedGoals[swapIndex]; const batch = writeBatch(db); batch.update(doc(db, goalsCollectionPath, goal.id), { sortOrder: otherGoal.sortOrder }); batch.update(doc(db, goalsCollectionPath, otherGoal.id), { sortOrder: goal.sortOrder }); await batch.commit(); } };
+            
+            return (
+                <div className="animate-fade-in">
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Goals</h1>
+                        <div className="flex items-center gap-2 sm:gap-4">
+                            {/* FIX: Added text color for dark mode */}
+                            <button onClick={handleAISuggestion} disabled={isAISuggesting} className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 rounded-lg disabled:opacity-50">
+                                <Icon name="sparkles" className="w-5 h-5 text-pink-500"/>
+                                <span className="text-gray-800 dark:text-slate-200">{isAISuggesting ? "Thinking..." : "Suggest Goal"}</span>
+                            </button>
+                            <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 rounded-lg">
+                                <Icon name="filter" className="w-5 h-5"/>
+                                <span className="hidden sm:inline text-gray-800 dark:text-slate-200">Filters</span>
+                            </button>
+                            <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors">
+                                <Icon name="plus" className="w-5 h-5"/>
+                                <span className="hidden sm:inline">New Goal</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {isFilterOpen && (
+                         <div className="bg-white dark:bg-slate-800 p-4 rounded-lg mb-6 animate-fade-in-fast space-y-4">
+                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                     {/* FIX: Added text color for dark mode */}
+                                     <label className="text-sm font-medium text-gray-800 dark:text-slate-300">Status</label>
+                                     <select onChange={(e) => handleFilterChange('status', e.target.value)} value={filters.status} className="mt-1 w-full rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-pink-500 text-gray-800 dark:text-slate-200">
+                                         <option value="all">All</option>
+                                         <option value="active">Active</option>
+                                         <option value="completed">Completed</option>
+                                     </select>
+                                </div>
+                                 <div>
+                                     <label className="text-sm font-medium text-gray-800 dark:text-slate-300">Deadline</label>
+                                     <select onChange={(e) => handleFilterChange('deadline', e.target.value)} value={filters.deadline} className="mt-1 w-full rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-pink-500 text-gray-800 dark:text-slate-200">
+                                         <option value="all">All</option>
+                                         <option value="upcoming">Upcoming</option>
+                                         <option value="expired">Expired</option>
+                                     </select>
+                                </div>
+                                 <div>
+                                     <label className="text-sm font-medium text-gray-800 dark:text-slate-300">Favorite</label>
+                                     <select onChange={(e) => handleFilterChange('favorite', e.target.value)} value={filters.favorite} className="mt-1 w-full rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-pink-500 text-gray-800 dark:text-slate-200">
+                                         <option value="all">All</option>
+                                         <option value="favorited">Favorited</option>
+                                     </select>
+                                </div>
+                                <div>
+                                     <label className="text-sm font-medium text-gray-800 dark:text-slate-300">Sort By</label>
+                                     <select onChange={(e) => setSortBy(e.target.value)} value={sortBy} className="mt-1 w-full rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-pink-500 text-gray-800 dark:text-slate-200">
+                                         <option value="newest">Newest</option>
+                                         <option value="oldest">Oldest</option>
+                                         <option value="deadline">Deadline</option>
+                                     </select>
+                                </div>
+                             </div>
+                             {allTags.length > 0 && (
+                                <div>
+                                    <label className="text-sm font-medium text-gray-800 dark:text-slate-300">Tags</label>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        {allTags.map(tag => (
+                                            <button key={tag} onClick={() => handleTagToggle(tag)} className={`px-3 py-1 text-xs rounded-full ${filters.tags.includes(tag) ? 'bg-pink-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-gray-800 dark:text-slate-200'}`}>{tag}</button>
+                                        ))}
+                                    </div>
+                                </div>
+                             )}
+                         </div>
+                    )}
+
+                    <div className="space-y-4">{sortedAndFilteredGoals.length > 0 ? sortedAndFilteredGoals.map(goal => <GoalItem key={goal.id} goal={goal} onEdit={handleOpenModal} onDelete={handleDeleteGoal} onToggleStatus={toggleGoalStatus} onToggleFavorite={toggleFavorite} onMove={moveFavorite} onUpdateGoal={handleUpdateGoal}/>) : <p className="text-center text-slate-500 py-10">No goals match filters.</p>}</div>
+                    {isModalOpen && <GoalModal goal={currentGoal} onClose={handleCloseModal} onSave={handleSaveGoal} />}
+                </div>
+            );
+        };
 
         // =================================================================================================
         // SECTION 4: LAYOUT & MAIN APP COMPONENT
@@ -501,7 +715,15 @@ const DashboardPage = ({ goals, journals, onNavigate, settings }) => {
             useEffect(() => { if (!auth) return; const unsubscribe = onAuthStateChanged(auth, async (currentUser) => { if (currentUser) { setUser(currentUser); } else { try { if (initialAuthToken) { await signInWithCustomToken(auth, initialAuthToken); } else { await signInAnonymously(auth); } } catch (err) { console.error("Auth failed:", err); setStatus({ loading: false, error: "Could not authenticate user." }); } } }); return () => unsubscribe(); }, [auth]);
             useEffect(() => { if (!db || !user) return; setStatus({ loading: true, error: null }); const unsubGoals = onSnapshot(query(collection(db, `artifacts/${appId}/users/${user.uid}/goals`)), (snapshot) => { setGoals(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))); setStatus(s => ({ ...s, loading: false })); }, (err) => { console.error("Error fetching goals:", err); setStatus({ loading: false, error: "Failed to load goals." }); }); const unsubJournals = onSnapshot(query(collection(db, `artifacts/${appId}/users/${user.uid}/journals`)), (snapshot) => { setJournals(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0))); }, (err) => console.error("Error fetching journals:", err)); const unsubSettings = onSnapshot(doc(db, `artifacts/${appId}/users/${user.uid}/settings`, 'main'), (doc) => { if (doc.exists()) { console.log("Firebase sent new settings:", doc.data()); setSettings(s => ({...s, ...doc.data()})); } }, (err) => console.error("Error fetching settings:", err)); return () => { unsubGoals(); unsubJournals(); unsubSettings(); }; }, [db, user]);
             const handleUpdateSettings = async (newSettings) => { const settingsRef = doc(db, `artifacts/${appId}/users/${user.uid}/settings`, 'main'); try { await setDoc(settingsRef, newSettings, { merge: true }); } catch (error) { console.error("Error updating settings:", error); } };
-            const renderPage = () => { switch (currentPage) { case 'goals': return <GoalsPage goals={goals} journals={journals} db={db} user={user} requestConfirmation={requestConfirmation} />; case 'journal': return <JournalPage journals={journals} goals={goals} db={db} user={user} openDevModal={openDevModal} requestConfirmation={requestConfirmation} />; case 'chat': return <ChatPage goals={goals} journals={journals} db={db} user={user} />; case 'settings': return <SettingsPage settings={settings} onUpdateSettings={handleUpdateSettings} goals={goals} journals={journals} db={db} user={user} openDevModal={openDevModal} />; default: return <DashboardPage goals={goals} journals={journals} onNavigate={setCurrentPage} settings={settings} />; } };
+            const renderPage = () => {
+            switch (currentPage) {
+                case 'goals': return <GoalsPage goals={goals} journals={journals} db={db} user={user} requestConfirmation={requestConfirmation} openDevModal={openDevModal} />;
+                case 'journal': return <JournalPage journals={journals} goals={goals} db={db} user={user} openDevModal={openDevModal} requestConfirmation={requestConfirmation} />;
+                case 'chat': return <ChatPage goals={goals} journals={journals} db={db} user={user} />;
+                case 'settings': return <SettingsPage settings={settings} onUpdateSettings={handleUpdateSettings} goals={goals} journals={journals} db={db} user={user} openDevModal={openDevModal} />;
+                default: return <DashboardPage goals={goals} journals={journals} onNavigate={setCurrentPage} settings={settings} />;
+            }
+            };       
             if (status.error) { return <div className="flex items-center justify-center h-screen bg-red-900 text-white p-4 text-center"><h1>Error</h1><p>{status.error}</p></div>; }
             if (status.loading || !user) { return <div className="flex items-center justify-center h-screen bg-slate-900 text-white">Loading MemoryAI...</div>; }
             return ( <React.Fragment><Layout currentPage={currentPage} onNavigate={setCurrentPage} user={user} settings={settings}>{renderPage()}</Layout><Modal isOpen={modal.isOpen} onClose={() => setModal({isOpen: false})} title={modal.title}>{modal.content}</Modal><ConfirmationModal isOpen={confirmation.isOpen} onClose={() => setConfirmation({isOpen: false})} onConfirm={confirmation.onConfirm} title={confirmation.title}>{confirmation.content}</ConfirmationModal></React.Fragment> );
