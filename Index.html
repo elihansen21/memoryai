@@ -1,0 +1,1557 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 24.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 24.0px Helvetica; min-height: 29.0px}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 24.0px Helvetica; color: #000000; -webkit-text-stroke: #155b23}
+    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 24.0px Helvetica; color: #000000; -webkit-text-stroke: rgba(6, 21, 57, 0.7)}
+    p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; font: 24.0px Helvetica; -webkit-text-stroke: #155b23}
+    p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 24.0px Helvetica; -webkit-text-stroke: #155b23; min-height: 29.0px}
+    span.s1 {color: #000000; -webkit-text-stroke: 0px #000000}
+    span.s2 {font-kerning: none; -webkit-text-stroke: 0px rgba(6, 21, 57, 0.7)}
+    span.s3 {font-kerning: none}
+    span.s4 {font-kerning: none; -webkit-text-stroke: 0px #155b23}
+    span.Apple-tab-span {white-space:pre}
+  </style>
+</head>
+<body>
+<p class="p1">// =================================================================================================</p>
+<p class="p1">// MEMORYAI - PERSONAL GOAL &amp; JOURNAL MANAGER</p>
+<p class="p1">// =================================================================================================</p>
+<p class="p1">// This is a single-file React application. React is a library for building user interfaces.</p>
+<p class="p1">// The entire app—all its components, logic, and functionality—is contained within this one file.</p>
+<p class="p1">// It uses Firebase's Firestore for the database and Google's Gemini API for AI features.</p>
+<p class="p1">//</p>
+<p class="p1">// --- FOR OUR NON-DEVELOPER TEAM MEMBERS ---</p>
+<p class="p1">// Think of this file as the complete blueprint for our app. It's written in JavaScript and JSX</p>
+<p class="p1">// (a mix of HTML-like code and JavaScript). We've broken the app into smaller, reusable pieces</p>
+<p class="p1">// called "components." For example, the dashboard page, a goal item, and a button are all</p>
+<p class="p1">// components. Each component has a specific job.</p>
+<p class="p1">//</p>
+<p class="p1">// --- PREPARING FOR A MOBILE APP (React Native) ---</p>
+<p class="p1">// This app is built for the web, but much of its "brain" can be reused for a native mobile app.</p>
+<p class="p1">// If we build a mobile app using React Native:</p>
+<p class="p1">// 1.<span class="Apple-converted-space">  </span>REUSABLE LOGIC: Most of the JavaScript code—how we talk to the database (Firebase), how we</p>
+<p class="p1">// <span class="Apple-converted-space">    </span>call the AI (Gemini), and how we manage the app's data—can be copied over directly.</p>
+<p class="p1">// <span class="Apple-converted-space">    </span>This is the core business logic.</p>
+<p class="p1">// 2.<span class="Apple-converted-space">  </span>UI CHANGES: The visual parts (the JSX code using `&lt;div&gt;`, `&lt;button&gt;`, `&lt;input&gt;`) would need</p>
+<p class="p1">// <span class="Apple-converted-space">    </span>to be replaced with React Native's components (like `&lt;View&gt;`, `&lt;TouchableOpacity&gt;`, `&lt;TextInput&gt;`).</p>
+<p class="p1">// <span class="Apple-converted-space">    </span>It's like swapping out web building blocks for mobile building blocks.</p>
+<p class="p1">// 3.<span class="Apple-converted-space">  </span>STYLING: The styling, which currently uses Tailwind CSS (e.g., `className="text-xl font-bold"`),</p>
+<p class="p1">// <span class="Apple-converted-space">    </span>would be replaced with React Native's StyleSheet system. The design can be kept, but the</p>
+<p class="p1">// <span class="Apple-converted-space">    </span>way it's written will change.</p>
+<p class="p1">// This structure makes it much faster to develop a mobile version because the hardest parts are already solved.</p>
+<p class="p1">// =================================================================================================</p>
+<p class="p2"><br></p>
+<p class="p1">import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';</p>
+<p class="p1">import { initializeApp } from 'firebase/app';</p>
+<p class="p1">import { getAuth, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from 'firebase/auth';</p>
+<p class="p1">import {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>getFirestore,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>collection,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>doc,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>onSnapshot,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>addDoc,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>updateDoc,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>deleteDoc,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>query,<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>serverTimestamp,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>Timestamp,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>writeBatch,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setDoc,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>getDoc,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>arrayUnion,</p>
+<p class="p1"><span class="Apple-converted-space">    </span>arrayRemove</p>
+<p class="p1">} from 'firebase/firestore';</p>
+<p class="p2"><br></p>
+<p class="p1">// =================================================================================================</p>
+<p class="p1">// SECTION 1: APP CONFIGURATION</p>
+<p class="p1">// This is the setup area. You MUST replace the placeholder values here with the actual keys</p>
+<p class="p1">// from your Firebase and Google AI projects for the app to work.</p>
+<p class="p1">// =================================================================================================</p>
+<p class="p1">const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';</p>
+<p class="p1">const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// HOW-TO: Get this from your Firebase project settings. Go to Project Settings &gt; General.</p>
+<p class="p3"><span class="s1"><span class="Apple-tab-span">	</span></span><span class="s2">apiKey: </span><span class="s3">"AIzaSyCo1YkMB0DPIBsNFGnIzbotLaUIt0g_iMI"</span><span class="s2">,</span></p>
+<p class="p3"><span class="s2"><span class="Apple-tab-span">	</span>authDomain: </span><span class="s3">"memoryai-1.firebaseapp.com"</span><span class="s2">,</span></p>
+<p class="p4"><span class="s3">  <span class="Apple-tab-span">	</span>projectId: </span><span class="s4">"memoryai-1"</span><span class="s3">,</span></p>
+<p class="p3"><span class="s2">  <span class="Apple-tab-span">	</span>storageBucket: </span><span class="s3">"memoryai-1.firebasestorage.app"</span><span class="s2">,</span></p>
+<p class="p4"><span class="s3">  <span class="Apple-tab-span">	</span>messagingSenderId: </span><span class="s4">"610341604361"</span><span class="s3">,</span></p>
+<p class="p3"><span class="s2">  <span class="Apple-tab-span">	</span>appId: </span><span class="s3">"1:610341604361:web:4762e05b109148ba39bcd8"</span><span class="s2">,</span></p>
+<p class="p4"><span class="s3">  <span class="Apple-tab-span">	</span>measurementId: </span><span class="s4">"G-79BJCF6WG3"</span></p>
+<p class="p5">};</p>
+<p class="p5">const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;</p>
+<p class="p5">const geminiApiKey = "AIzaSyAtcdXV8NsZnye9VnG29D5vQuKimT1teo0"; // This is intentionally left empty. The environment provides it automatically. Until you deploy.</p>
+<p class="p6"><br></p>
+<p class="p5">// =================================================================================================</p>
+<p class="p5">// SECTION 2: HELPER COMPONENTS &amp; FUNCTIONS</p>
+<p class="p5">// These are small, reusable tools used throughout the app to avoid repeating code.</p>
+<p class="p5">// =================================================================================================</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* A reusable pop-up box (a "Modal") for showing messages to the user.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* We use this for "in-development" feature warnings.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const Modal = ({ isOpen, onClose, title, children }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>if (!isOpen) return null;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 animate-fade-in-fast" onClick={onClose}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-2xl w-full max-w-sm m-4 text-center" onClick={e =&gt; e.stopPropagation()}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white"&gt;{title}&lt;/h2&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="text-slate-600 dark:text-slate-300 mb-6"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>{children}</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;button</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>onClick={onClose}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>className="w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>Got it</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* A confirmation modal used for destructive actions like deleting.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* It's similar to the info Modal but has "Confirm" and "Cancel" buttons.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>if (!isOpen) return null;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 animate-fade-in-fast" onClick={onClose}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-2xl w-full max-w-sm m-4" onClick={e =&gt; e.stopPropagation()}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white"&gt;{title}&lt;/h2&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="text-slate-600 dark:text-slate-300 mb-6"&gt;{children}&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="flex justify-end gap-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;button onClick={onClose} className="px-4 py-2 bg-slate-200 dark:bg-slate-600 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500"&gt;Cancel&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;button onClick={() =&gt; { onConfirm(); onClose(); }} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"&gt;Delete&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* A central component to manage all the icons used in the app.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* To add a new icon, you just add it to the `icons` object here. This keeps our visuals organized.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const Icon = ({ name, className = 'w-6 h-6' }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const icons = {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>dashboard: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>goals: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 110-18 9 9 0 010 18zm0 0a8.949 8.949 0 005.482-1.932M12 21a8.949 8.949 0 01-5.482-1.932M12 3a8.949 8.949 0 015.482-1.932M12 3a8.949 8.949 0 00-5.482-1.932M9 12l2 2 4-4" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>journal: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>chat: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.76 9.76 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>brain: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>send: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.125A59.769 59.769 0 0121.485 12 59.768 59.768 0 013.27 20.875L5.999 12zm0 0h7.5" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>star: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.562.562 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.562.562 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>trash: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.067-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>edit: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zM16.862 4.487L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>chevronUp: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>chevronDown: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>check: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>uncheck: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>settings: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>microphone: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m12 7.5v-1.5a6 6 0 00-6-6v-1.5a6 6 0 00-6 6v1.5m12 0v-1.5a6 6 0 00-6-6v-1.5a6 6 0 00-6 6v1.5m6 7.5a6 6 0 006-6" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>filter: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.572a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>plus: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>sun: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>moon: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25c0 5.385 4.365 9.75 9.75 9.75 2.806 0 5.347-1.18 7.252-3.002z" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>grip: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" transform="rotate(90 12 12) scale(0.5) translate(4, -10)" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>x: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>bookmark: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.5 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>sparkles: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>fire: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.362-3.797z" /&gt;,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>bell: &lt;path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p5"><span class="Apple-converted-space">    </span>return &lt;svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}&gt;{icons[name]}&lt;/svg&gt;;</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* Turns a database timestamp into a human-friendly date string (e.g., "October 14, 2025").</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const formatDate = (timestamp) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>if (!timestamp) return 'No date';</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* Converts a date string (like "2025-10-14") into a Firestore Timestamp object that the database understands.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const dateToTimestamp = (dateString) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>if (!dateString) return null;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>return Timestamp.fromDate(new Date(`${dateString}T00:00:00`)); // Use T00:00:00 to avoid timezone issues</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* Converts a Firestore Timestamp back into a string that an HTML date input can use (YYYY-MM-DD).</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const timestampToDateInput = (timestamp) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>if (!timestamp) return '';</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const date = timestamp.toDate();</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const tzoffset = date.getTimezoneOffset() * 60000;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const localISOTime = new Date(date.getTime() - tzoffset).toISOString().slice(0, 10);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>return localISOTime;</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* A special component to highlight search terms within a block of text.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* It finds the search term and wraps it in a colored span.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const Highlight = ({ text, highlight }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>if (!highlight || typeof text !== 'string') {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>return text;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const parts = text.split(new RegExp(`(${highlight})`, 'gi'));</p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>{parts.map((part, i) =&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>part.toLowerCase() === highlight.toLowerCase() ? (</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;span key={i} className="bg-yellow-200 dark:bg-yellow-700 rounded"&gt;{part}&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>) : (</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>part</p>
+<p class="p5"><span class="Apple-converted-space">                </span>)</p>
+<p class="p5"><span class="Apple-converted-space">            </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">// =================================================================================================</p>
+<p class="p5">// SECTION 3: PAGE COMPONENTS</p>
+<p class="p5">// Each of these components represents a full page view within the app.</p>
+<p class="p5">// =================================================================================================</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* The Dashboard Page: The first screen the user sees.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const DashboardPage = ({ goals, journals, onNavigate, settings }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const favoriteGoals = useMemo(() =&gt; goals.filter(g =&gt; g.favorite).sort((a,b) =&gt; (a.sortOrder || 0) - (b.sortOrder || 0)), [goals]);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const userName = settings?.name;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const journalStreak = useMemo(() =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (journals.length === 0) return 0;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>let streak = 0;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>let today = new Date();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>today.setHours(0, 0, 0, 0);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const mostRecentEntryDate = journals[0].createdAt.toDate();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>mostRecentEntryDate.setHours(0,0,0,0);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const diffTime = today - mostRecentEntryDate;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (diffDays &gt; 1) return 0;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const uniqueDays = new Set();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>journals.forEach(j =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const date = j.createdAt.toDate();</p>
+<p class="p5"><span class="Apple-converted-space">            </span>uniqueDays.add(date.toDateString());</p>
+<p class="p5"><span class="Apple-converted-space">        </span>});</p>
+<p class="p5"><span class="Apple-converted-space">        </span>let currentDate = new Date(today);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>while (uniqueDays.has(currentDate.toDateString())) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>streak++;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>currentDate.setDate(currentDate.getDate() - 1);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>return streak;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}, [journals]);</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;div className="space-y-8 animate-fade-in"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="flex justify-between items-start"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;h1 className="text-4xl font-bold text-gray-800 dark:text-white"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>{userName ? `Welcome Back, ${userName}!` : "Welcome Back!"}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/h1&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;p className="text-slate-500 dark:text-slate-400 mt-2"&gt;Ready to make some progress today? Let's get started. ✨&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>{/* FIX: Logic changed to `!== false` to handle `undefined` case correctly. */}</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>{(settings?.showStreak !== false) &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div className="flex items-center gap-2 bg-white dark:bg-slate-800 p-3 rounded-xl shadow-md"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;Icon name="fire" className="w-8 h-8 text-orange-500" /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;p className="text-2xl font-bold text-gray-800 dark:text-white"&gt;{journalStreak}&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;p className="text-xs text-slate-500 dark:text-slate-400 -mt-1"&gt;Day Streak&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="grid grid-cols-1 lg:grid-cols-2 gap-8"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white"&gt;Your Favorite Goals&lt;/h3&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>{favoriteGoals.length &gt; 0 ? (</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;ul className="space-y-3"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>{favoriteGoals.slice(0, 5).map(goal =&gt; (</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;li key={goal.id} className="flex items-center space-x-3 bg-slate-100 dark:bg-slate-700 p-3 rounded-lg"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;Icon name="star" className="text-yellow-400 w-5 h-5 fill-current" /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;span className="truncate flex-1 text-gray-800 dark:text-slate-200"&gt;{goal.title}&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>{goal.targetValue &gt; 0 &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                                        </span>&lt;div className="text-xs text-slate-600 dark:text-slate-300"&gt;{Math.round(((goal.currentValue || 0)/goal.targetValue)*100)}%&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;/li&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>))}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/ul&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>) : (</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;p className="text-slate-500 dark:text-slate-400"&gt;You haven't favorited any goals yet.&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>&lt;button onClick={() =&gt; onNavigate('goals')} className="mt-6 text-pink-500 hover:underline"&gt;View All Goals →&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col items-center justify-center text-center"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;Icon name="brain" className="w-12 h-12 text-pink-500" /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;h3 className="text-xl font-bold mt-4 text-gray-900 dark:text-white"&gt;Chat with Memory&lt;/h3&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;p className="text-slate-500 dark:text-slate-400 mt-2"&gt;Need some advice or motivation? Your AI assistant is here to help you reflect and plan.&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>&lt;button onClick={() =&gt; onNavigate('chat')} className="mt-6 bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition-colors"&gt;Start Chatting&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* The Settings Page: Allows the user to customize their experience.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const SettingsPage = ({ settings, goals, journals, db, user, openDevModal }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [name, setName] = useState(settings?.name || '');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [theme, setTheme] = useState(settings?.theme || 'dark');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [tabs, setTabs] = useState(settings?.tabs || ['dashboard', 'goals', 'journal', 'chat']);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [showStreak, setShowStreak] = useState(settings?.showStreak !== false);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [goalNotifications, setGoalNotifications] = useState(settings?.goalNotifications ?? false);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [journalNotifications, setJournalNotifications] = useState(settings?.journalNotifications ?? false);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [notificationTime, setNotificationTime] = useState(settings?.notificationTime || '09:00');</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const settingsRef = useMemo(() =&gt; doc(db, `artifacts/${appId}/users/${user.uid}/settings/main`), [db, user]);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const isInitialMount = useRef(true);</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const { totalGoals, completedGoals, journalEntries } = useMemo(() =&gt; ({</p>
+<p class="p5"><span class="Apple-converted-space">        </span>totalGoals: goals.length,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>completedGoals: goals.filter(g =&gt; g.status === 'completed').length,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>journalEntries: journals.length</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}), [goals, journals]);</p>
+<p class="p6"><br></p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>useEffect(() =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (isInitialMount.current) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>isInitialMount.current = false;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>return;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const handler = setTimeout(() =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setDoc(settingsRef, { name, theme }, { merge: true });</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}, 1000);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>return () =&gt; clearTimeout(handler);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}, [name, theme, settingsRef]);</p>
+<p class="p6"><br></p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleAdvancedSave = async () =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>try {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>await setDoc(settingsRef, { tabs, showStreak, goalNotifications, journalNotifications, notificationTime }, { merge: true });</p>
+<p class="p5"><span class="Apple-converted-space">            </span>openDevModal("Settings Saved", "Your advanced settings have been updated.");</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} catch (error) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>console.error("Error saving advanced settings: ", error);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;div className="space-y-8 animate-fade-in max-w-4xl mx-auto"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;h1 className="text-3xl font-bold text-gray-900 dark:text-white"&gt;Settings&lt;/h1&gt;</p>
+<p class="p6"><span class="Apple-converted-space">            </span></p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white"&gt;Personalization &amp; Appearance&lt;/h2&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;p className="text-sm text-slate-500 dark:text-slate-400 mb-4"&gt;Changes to your name and theme are saved automatically.&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="space-y-6"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;label htmlFor="name" className="block text-sm font-medium text-slate-600 dark:text-slate-400"&gt;Your Name&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;input id="name" type="text" value={name} onChange={(e) =&gt; setName(e.target.value)} placeholder="How should we greet you?" className="mt-1 block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;label className="block text-sm font-medium text-slate-600 dark:text-slate-400"&gt;Theme&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div className="mt-2 flex items-center space-x-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;button onClick={() =&gt; setTheme('light')} className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${theme === 'light' ? 'bg-pink-500 text-white' : 'bg-slate-200 dark:bg-slate-700'}`}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;Icon name="sun" className="w-5 h-5" /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;span&gt;Light&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;button onClick={() =&gt; setTheme('dark')} className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-pink-500 text-white' : 'bg-slate-200 dark:bg-slate-700'}`}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;Icon name="moon" className="w-5 h-5" /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;span&gt;Dark&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">             </span>&lt;div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white"&gt;Analytics&lt;/h2&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div className="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;p className="text-2xl font-bold"&gt;{totalGoals}&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;p className="text-sm text-slate-500 dark:text-slate-400"&gt;Total Goals&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div className="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;p className="text-2xl font-bold"&gt;{completedGoals}&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;p className="text-sm text-slate-500 dark:text-slate-400"&gt;Completed&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div className="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;p className="text-2xl font-bold"&gt;{journalEntries}&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;p className="text-sm text-slate-500 dark:text-slate-400"&gt;Journal Entries&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">             </span>&lt;div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white"&gt;Advanced Settings&lt;/h2&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="space-y-6"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div className="flex justify-between items-center"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;label className="text-slate-600 dark:text-slate-300"&gt;Show Journal Streak on Dashboard&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;button onClick={() =&gt; setShowStreak(!showStreak)} className={`w-12 h-6 rounded-full flex items-center px-1 transition-colors ${showStreak ? 'bg-pink-500' : 'bg-slate-300 dark:bg-slate-600'}`}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;span className={`block w-4 h-4 bg-white rounded-full transition-transform ${showStreak ? 'translate-x-6':''}`}&gt;&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                      </span>&lt;div className="flex justify-between items-center"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;label className="text-slate-600 dark:text-slate-300"&gt;Enable Goal Reminders&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;p className="text-xs text-slate-500"&gt;Feature in development&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;button onClick={() =&gt; setGoalNotifications(!goalNotifications)} className={`w-12 h-6 rounded-full flex items-center px-1 transition-colors ${goalNotifications ? 'bg-pink-500' : 'bg-slate-300 dark:bg-slate-600'}`}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;span className={`block w-4 h-4 bg-white rounded-full transition-transform ${goalNotifications ? 'translate-x-6':''}`}&gt;&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                      </span>&lt;div className="flex justify-between items-center"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;label className="text-slate-600 dark:text-slate-300"&gt;Enable Daily Journaling Reminders&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;p className="text-xs text-slate-500"&gt;Feature in development&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;button onClick={() =&gt; setJournalNotifications(!journalNotifications)} className={`w-12 h-6 rounded-full flex items-center px-1 transition-colors ${journalNotifications ? 'bg-pink-500' : 'bg-slate-300 dark:bg-slate-600'}`}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;span className={`block w-4 h-4 bg-white rounded-full transition-transform ${journalNotifications ? 'translate-x-6':''}`}&gt;&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>{ (goalNotifications || journalNotifications) &amp;&amp;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div className="animate-fade-in-fast"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;label htmlFor="notificationTime" className="block text-sm font-medium text-slate-600 dark:text-slate-400"&gt;Preferred Notification Time&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;input id="notificationTime" type="time" value={notificationTime} onChange={(e) =&gt; setNotificationTime(e.target.value)} className="mt-1 block w-full max-w-xs bg-slate-100 dark:bg-slate-700 border-transparent rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>}</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;div className="flex justify-end mt-6"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;button onClick={handleAdvancedSave} className="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition-colors"&gt;Save Advanced&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p6"><span class="Apple-converted-space">            </span></p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="mt-auto text-center"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;p className="text-xs text-slate-500 dark:text-slate-400"&gt;User ID:&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;p className="text-xs text-slate-400 dark:text-slate-500 break-all mt-1"&gt;{user?.uid || 'N/A'}&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* The Journal Page: Where users write, view, and manage their journal entries.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const JournalPage = ({ journals, db, user, openDevModal, goals, requestConfirmation }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [newEntry, setNewEntry] = useState('');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [mood, setMood] = useState(null);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [searchTerm, setSearchTerm] = useState('');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [moodFilter, setMoodFilter] = useState('all');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [suggestedPrompt, setSuggestedPrompt] = useState('');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [editingJournal, setEditingJournal] = useState(null);</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const journalCollectionPath = `artifacts/${appId}/users/${user.uid}/journals`;</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const promptCategories = ['Contemplative', 'Creative', 'Funny', 'Spiritual'];</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const moods = { '😊': 'Happy', '🙂': 'Content', '😐': 'Neutral', '😕': 'Unsure', '😢': 'Sad', '😠': 'Angry' };</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleAddEntry = async (e) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>e.preventDefault();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (newEntry.trim() === '') return;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>setIsLoadingPrompt(true);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>try {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const titlePrompt = `Analyze this journal entry and create a short, evocative title (3-5 words). Return only the title. Entry: "${newEntry}"`;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const response = await fetch(apiUrl, {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>method: 'POST', headers: { 'Content-Type': 'application/json' },</p>
+<p class="p5"><span class="Apple-converted-space">                </span>body: JSON.stringify({ contents: [{ parts: [{ text: titlePrompt }] }]})</p>
+<p class="p5"><span class="Apple-converted-space">            </span>});</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const data = await response.json();</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const aiTitle = data.candidates?.[0]?.content?.parts?.[0]?.text?.replace(/"/g, '').trim() || "Journal Entry";</p>
+<p class="p6"><span class="Apple-converted-space">            </span></p>
+<p class="p5"><span class="Apple-converted-space">            </span>await addDoc(collection(db, journalCollectionPath), {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>title: aiTitle,</p>
+<p class="p5"><span class="Apple-converted-space">                </span>text: newEntry,</p>
+<p class="p5"><span class="Apple-converted-space">                </span>mood: mood,</p>
+<p class="p5"><span class="Apple-converted-space">                </span>createdAt: serverTimestamp()</p>
+<p class="p5"><span class="Apple-converted-space">            </span>});</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setNewEntry('');</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setMood(null);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} catch (error) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>console.error("Error adding journal entry: ", error);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} finally {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setIsLoadingPrompt(false);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleSaveEdit = async (id, updatedData) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>try {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>await updateDoc(doc(db, journalCollectionPath, id), {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>...updatedData,</p>
+<p class="p5"><span class="Apple-converted-space">                </span>editedAt: serverTimestamp()</p>
+<p class="p5"><span class="Apple-converted-space">            </span>});</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setEditingJournal(null);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} catch(e) { console.error("Error saving edit: ", e)}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleDeleteEntry = (id, title) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>requestConfirmation(</p>
+<p class="p5"><span class="Apple-converted-space">            </span>'Delete Journal Entry?',</p>
+<p class="p5"><span class="Apple-converted-space">            </span>`Are you sure you want to permanently delete "${title}"? This action cannot be undone.`,</p>
+<p class="p5"><span class="Apple-converted-space">            </span>async () =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>try {</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>await deleteDoc(doc(db, journalCollectionPath, id));</p>
+<p class="p5"><span class="Apple-converted-space">                </span>} catch (error) {</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>console.error("Error deleting journal entry: ", error);</p>
+<p class="p5"><span class="Apple-converted-space">                </span>}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const startAudioRecording = () =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>openDevModal("Feature In Development", "Audio journaling with automatic transcription is coming soon!");</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const getAIPrompt = async (category) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>setIsLoadingPrompt(true);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const activeGoals = goals.filter(g =&gt; g.status === 'active').map(g =&gt; g.title).join(', ');</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const prompt = `Generate a single, ${category.toLowerCase()} journal prompt. Keep it concise, open-ended, and thought-provoking. For context, I'm working on goals like: ${activeGoals}.`;</p>
+<p class="p6"><span class="Apple-converted-space">        </span></p>
+<p class="p5"><span class="Apple-converted-space">        </span>try {</p>
+<p class="p5"><span class="Apple-converted-space">             </span>const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;</p>
+<p class="p5"><span class="Apple-converted-space">             </span>const response = await fetch(apiUrl, {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>method: 'POST',</p>
+<p class="p5"><span class="Apple-converted-space">                </span>headers: { 'Content-Type': 'application/json' },</p>
+<p class="p5"><span class="Apple-converted-space">                </span>body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }]})</p>
+<p class="p5"><span class="Apple-converted-space">            </span>});</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const data = await response.json();</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const aiPrompt = data.candidates?.[0]?.content?.parts?.[0]?.text;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>if (aiPrompt) {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>setSuggestedPrompt(aiPrompt.replace(/"/g, ''));</p>
+<p class="p5"><span class="Apple-converted-space">            </span>}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} catch (error) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>console.error("AI Prompt generation failed: ", error);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} finally {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setIsLoadingPrompt(false);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const filteredJournals = useMemo(() =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>return journals.filter(entry =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const searchTermMatch = (entry.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || (entry.text?.toLowerCase() || '').includes(searchTerm.toLowerCase());</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const moodMatch = moodFilter === 'all' || entry.mood === moodFilter;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>return searchTermMatch &amp;&amp; moodMatch;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>});</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}, [journals, searchTerm, moodFilter]);</p>
+<p class="p6"><br></p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;div className="animate-fade-in"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white"&gt;Your Journal&lt;/h1&gt;</p>
+<p class="p6"><span class="Apple-converted-space">            </span></p>
+<p class="p5"><span class="Apple-converted-space">            </span>{editingJournal ? (</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;JournalModal journal={editingJournal} onSave={handleSaveEdit} onClose={() =&gt; setEditingJournal(null)} moods={moods} /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>) : (</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div className="mb-6 bg-slate-100 dark:bg-slate-800 p-4 rounded-lg"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;p className="text-sm text-slate-500 dark:text-slate-400 mb-2"&gt;{isLoadingPrompt ? "Thinking of a new prompt..." : "Need a spark? Try a prompt:"}&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;p className="italic text-gray-800 dark:text-slate-200 min-h-[2rem]"&gt;{!isLoadingPrompt &amp;&amp; `"${suggestedPrompt}"`}&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div className="mt-2 flex flex-wrap gap-2"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>{promptCategories.map(cat =&gt; (</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;button key={cat} onClick={() =&gt; getAIPrompt(cat)} disabled={isLoadingPrompt} className="text-xs px-3 py-1 bg-white dark:bg-slate-700 rounded-full hover:bg-pink-100 dark:hover:bg-pink-900/50 disabled:opacity-50"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>{cat}</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>))}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;form onSubmit={handleAddEntry} className="mb-8"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;textarea</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>value={newEntry}</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>onChange={(e) =&gt; setNewEntry(e.target.value)}</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>placeholder="What's on your mind today?"</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>rows="4"</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>className="w-full bg-white dark:bg-slate-800 p-4 rounded-lg border-2 border-transparent focus:border-pink-500 focus:outline-none transition-colors"</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&gt;&lt;/textarea&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                         </span>&lt;div className="mt-2 flex items-center gap-2"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>{Object.keys(moods).map(m =&gt; (</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;button type="button" key={m} onClick={() =&gt; setMood(m)} className={`text-2xl p-1 rounded-full transition-transform duration-200 ${mood === m ? 'bg-pink-200 dark:bg-pink-800/50 scale-125' : 'hover:scale-110'}`}&gt;{m}&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>))}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div className="mt-4 flex justify-between items-center"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;button type="button" onClick={startAudioRecording} className="flex items-center space-x-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;Icon name="microphone" className="w-5 h-5"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;span&gt;Record Audio&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;button type="submit" disabled={isLoadingPrompt} className="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>{isLoadingPrompt ? "Saving..." : "Save Entry"}</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/form&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>)}</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="mb-6 flex gap-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;input<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                    </span>type="text"</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>placeholder="Search journal entries..."</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>value={searchTerm}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>onChange={(e) =&gt; setSearchTerm(e.target.value)}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>className="w-full bg-white dark:bg-slate-800 p-3 rounded-lg border-2 border-transparent focus:border-pink-500 focus:outline-none"</p>
+<p class="p5"><span class="Apple-converted-space">                </span>/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;select onChange={(e) =&gt; setMoodFilter(e.target.value)} value={moodFilter} className="bg-white dark:bg-slate-800 p-3 rounded-lg border-2 border-transparent focus:border-pink-500 focus:outline-none"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>&lt;option value="all"&gt;All Moods&lt;/option&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>{Object.entries(moods).map(([emoji, name]) =&gt; &lt;option key={emoji} value={emoji}&gt;{emoji} {name}&lt;/option&gt;)}</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;/select&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="space-y-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>{filteredJournals.length &gt; 0 ? filteredJournals.map(entry =&gt; (</p>
+<p class="p5"><span class="Apple-converted-space">                   </span>&lt;JournalItem<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                    </span>key={entry.id}<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                    </span>journal={entry}<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                    </span>onEdit={() =&gt; setEditingJournal(entry)}<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                    </span>onDelete={handleDeleteEntry}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>searchTerm={searchTerm}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>moods={moods}</p>
+<p class="p5"><span class="Apple-converted-space">                   </span>/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>)) : (</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>&lt;p className="text-center text-slate-500 dark:text-slate-400 py-10"&gt;No journal entries found.&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* A component representing a single, editable journal entry in the list.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const JournalItem = ({ journal, onEdit, onDelete, searchTerm, moods }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [isMinimized, setIsMinimized] = useState(true);</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-md cursor-pointer" onClick={() =&gt; setIsMinimized(!isMinimized)}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="flex justify-between items-start"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="flex items-center gap-3"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>{journal.mood &amp;&amp; &lt;span className="text-2xl"&gt;{journal.mood}&lt;/span&gt;}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;h3 className="font-bold"&gt;&lt;Highlight text={journal.title} highlight={searchTerm} /&gt;&lt;/h3&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;p className="text-xs text-slate-500 dark:text-slate-400"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                           </span>Created: {formatDate(journal.createdAt)}<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                           </span>{journal.editedAt &amp;&amp; ` (Edited: ${formatDate(journal.editedAt)})`}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="flex items-center"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;button onClick={(e) =&gt; { e.stopPropagation(); onEdit(); }} className="p-1 text-slate-400 hover:text-blue-500"&gt;&lt;Icon name="edit" className="w-4 h-4" /&gt;&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;button onClick={(e) =&gt; { e.stopPropagation(); onDelete(journal.id, journal.title); }} className="p-1 text-slate-400 hover:text-red-500"&gt;&lt;Icon name="trash" className="w-4 h-4" /&gt;&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>{!isMinimized &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;p className="whitespace-pre-wrap"&gt;&lt;Highlight text={journal.text} highlight={searchTerm} /&gt;&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* The pop-up modal used for editing an existing journal entry.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const JournalModal = ({ journal, onSave, onClose, moods }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [title, setTitle] = useState(journal.title);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [text, setText] = useState(journal.text);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [mood, setMood] = useState(journal.mood);</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 animate-fade-in-fast"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">             </span>&lt;div className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-2xl w-full max-w-lg m-4 max-h-[90vh] overflow-y-auto"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;h2 className="text-xl font-bold mb-4"&gt;Edit Journal Entry&lt;/h2&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;label className="block text-sm font-medium"&gt;Title&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;input type="text" value={title} onChange={e =&gt; setTitle(e.target.value)} className="mt-1 w-full bg-slate-100 dark:bg-slate-700 rounded-md p-2"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;div className="mt-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;label className="block text-sm font-medium"&gt;Entry&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;textarea value={text} onChange={e =&gt; setText(e.target.value)} rows="6" className="mt-1 w-full bg-slate-100 dark:bg-slate-700 rounded-md p-2"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;div className="mt-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;label className="block text-sm font-medium"&gt;Mood&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div className="mt-2 flex items-center gap-2"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>{Object.keys(moods).map(m =&gt; (</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;button type="button" key={m} onClick={() =&gt; setMood(m)} className={`text-2xl p-1 rounded-full transition-transform duration-200 ${mood === m ? 'bg-pink-200 dark:bg-pink-800/50 scale-125' : 'hover:scale-110'}`}&gt;{m}&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>))}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;div className="flex justify-end gap-4 mt-6"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;button onClick={onClose} className="px-4 py-2 bg-slate-200 dark:bg-slate-600 rounded-lg"&gt;Cancel&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;button onClick={() =&gt; onSave(journal.id, {title, text, mood})} className="px-4 py-2 bg-pink-600 text-white rounded-lg"&gt;Save&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* The Chat Page: The interface for talking with the AI assistant, "Memory".</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const ChatPage = ({ goals, journals, db, user }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [messages, setMessages] = useState([</p>
+<p class="p5"><span class="Apple-converted-space">        </span>{ role: 'model', parts: [{ text: "Hey! It's Memory. What's on your mind? We can talk about your goals or just whatever's up." }] }</p>
+<p class="p5"><span class="Apple-converted-space">    </span>]);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [userInput, setUserInput] = useState('');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [isLoading, setIsLoading] = useState(false);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [isSaving, setIsSaving] = useState(false);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const chatContainerRef = useRef(null);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const journalCollectionPath = `artifacts/${appId}/users/${user.uid}/journals`;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>useEffect(() =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (chatContainerRef.current) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}, [messages]);</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const createSystemInstruction = useCallback(() =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const activeGoals = goals.filter(g =&gt; g.status === 'active');</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const recentJournals = journals.slice(0, 5);</p>
+<p class="p6"><span class="Apple-converted-space">        </span></p>
+<p class="p5"><span class="Apple-converted-space">        </span>let context = "You are Memory, a supportive and friendly AI assistant. Your tone is casual and personal, like talking to a friend. Use the provided context to have a natural conversation, don't just repeat the facts back to the user.\n\nHere's some context about me:\n";</p>
+<p class="p6"><span class="Apple-converted-space">        </span></p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (activeGoals.length &gt; 0) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>context += "I'm working on these goals: " + activeGoals.map(g =&gt; g.title).join(', ') + ".\n";</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (recentJournals.length &gt; 0) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>context += "Here are some of my recent journal snippets: " + recentJournals.map(j =&gt; `"${j.text.substring(0, 80)}..."`).join('; ') + "\n";</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p6"><span class="Apple-converted-space">        </span></p>
+<p class="p5"><span class="Apple-converted-space">        </span>return { parts: [{ text: context }] };</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}, [goals, journals]);</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleSaveToJournal = async (text) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (!text || isSaving) return;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>setIsSaving(true);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>try {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const titlePrompt = `Based on the following chat snippet, create a short, evocative title (3-5 words). Only return the title itself, no quotes. Snippet: "${text}"`;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const response = await fetch(apiUrl, {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>method: 'POST', headers: { 'Content-Type': 'application/json' },</p>
+<p class="p5"><span class="Apple-converted-space">                </span>body: JSON.stringify({ contents: [{ parts: [{ text: titlePrompt }] }]})</p>
+<p class="p5"><span class="Apple-converted-space">            </span>});</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const data = await response.json();</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const aiTitle = data.candidates?.[0]?.content?.parts?.[0]?.text?.replace(/"/g, '').trim() || "Chat with Memory";</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">            </span>await addDoc(collection(db, journalCollectionPath), {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>title: aiTitle,</p>
+<p class="p5"><span class="Apple-converted-space">                </span>text: `From my chat with Memory:\n\n"${text}"`,</p>
+<p class="p5"><span class="Apple-converted-space">                </span>createdAt: serverTimestamp()</p>
+<p class="p5"><span class="Apple-converted-space">            </span>});</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setShowSaveConfirmation(true);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setTimeout(() =&gt; setShowSaveConfirmation(false), 2000);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} catch (error) {</p>
+<p class="p5"><span class="Apple-converted-space">             </span>console.error("Error saving to journal:", error);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} finally {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setTimeout(() =&gt; setIsSaving(false), 3000); // 3 second cooldown</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleSendMessage = async () =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (userInput.trim() === '' || isLoading) return;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">        </span>const userMessage = { role: 'user', parts: [{ text: userInput }] };</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const newMessages = [...messages, userMessage];</p>
+<p class="p5"><span class="Apple-converted-space">        </span>setMessages(newMessages);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>setUserInput('');</p>
+<p class="p5"><span class="Apple-converted-space">        </span>setIsLoading(true);</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">        </span>const systemInstruction = createSystemInstruction();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const apiPayload = {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>contents: newMessages.map(msg =&gt; ({</p>
+<p class="p5"><span class="Apple-converted-space">              </span>role: msg.role === 'model' ? 'model' : 'user',</p>
+<p class="p5"><span class="Apple-converted-space">              </span>parts: msg.parts</p>
+<p class="p5"><span class="Apple-converted-space">            </span>})),</p>
+<p class="p5"><span class="Apple-converted-space">            </span>tools: [{ "google_search": {} }],</p>
+<p class="p5"><span class="Apple-converted-space">            </span>systemInstruction,</p>
+<p class="p5"><span class="Apple-converted-space">        </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">        </span>try {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const response = await fetch(apiUrl, {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>method: 'POST',</p>
+<p class="p5"><span class="Apple-converted-space">                </span>headers: { 'Content-Type': 'application/json' },</p>
+<p class="p5"><span class="Apple-converted-space">                </span>body: JSON.stringify(apiPayload)</p>
+<p class="p5"><span class="Apple-converted-space">            </span>});</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">            </span>if (!response.ok) {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>const errorData = await response.json();</p>
+<p class="p5"><span class="Apple-converted-space">                </span>throw new Error(errorData.error?.message || "API request failed");</p>
+<p class="p5"><span class="Apple-converted-space">            </span>}</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">            </span>const data = await response.json();</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const modelResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>if (modelResponse) {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>setMessages(prev =&gt; [...prev, { role: 'model', parts: [{ text: modelResponse }] }]);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>} else {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>throw new Error("Received an empty response from the AI.");</p>
+<p class="p5"><span class="Apple-converted-space">            </span>}</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">        </span>} catch (error) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>console.error("Gemini API call failed:", error);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setMessages(prev =&gt; [...prev, { role: 'model', parts: [{ text: `Oops, something went wrong. Sorry about that! Error: ${error.message}` }] }]);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} finally {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setIsLoading(false);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;div className="flex flex-col h-[calc(100vh-80px)] bg-white dark:bg-slate-800 rounded-xl shadow-2xl animate-fade-in relative"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>{showSaveConfirmation &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="absolute top-4 right-4 bg-green-500 text-white text-sm px-3 py-1 rounded-full animate-fade-in-fast"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>Saved to Journal!</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="p-3 border-b border-slate-200 dark:border-slate-700 flex items-center space-x-2"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;Icon name="brain" className="w-6 h-6 text-pink-500" /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;h1 className="text-lg font-bold text-gray-900 dark:text-white"&gt;Chat with Memory&lt;/h1&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div ref={chatContainerRef} className="flex-1 p-6 space-y-6 overflow-y-auto"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>{messages.map((msg, index) =&gt; (</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div key={index} className={`flex items-start gap-3 group ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>{msg.role === 'model' &amp;&amp; &lt;div className="w-8 h-8 rounded-full bg-pink-600 flex-shrink-0 flex items-center justify-center font-bold text-sm text-white"&gt;M&lt;/div&gt;}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div className={`max-w-xl p-3 rounded-2xl relative ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-200 dark:bg-slate-700 text-gray-900 dark:text-white rounded-bl-none'}`}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;p className="whitespace-pre-wrap text-sm sm:text-base"&gt;{msg.parts[0].text}&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>{msg.role === 'model' &amp;&amp; index &gt; 0 &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;button onClick={() =&gt; handleSaveToJournal(msg.parts[0].text)} disabled={isSaving} className="absolute -top-2 -right-2 p-1 bg-white dark:bg-slate-600 rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;Icon name="bookmark" className="w-4 h-4 text-pink-500"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>))}</p>
+<p class="p5"><span class="Apple-converted-space">                </span>{isLoading &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div className="flex items-start gap-3 justify-start"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div className="w-8 h-8 rounded-full bg-pink-600 flex-shrink-0 flex items-center justify-center font-bold text-sm text-white"&gt;M&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div className="max-w-xl p-4 rounded-2xl bg-slate-200 dark:bg-slate-700 rounded-bl-none"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;div className="flex items-center space-x-2"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse"&gt;&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse [animation-delay:0.2s]"&gt;&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse [animation-delay:0.4s]"&gt;&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="p-4 border-t border-slate-200 dark:border-slate-700"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="flex items-center bg-slate-100 dark:bg-slate-700 rounded-lg p-1"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;input</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>type="text"</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>value={userInput}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>onChange={(e) =&gt; setUserInput(e.target.value)}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>onKeyPress={(e) =&gt; e.key === 'Enter' &amp;&amp; handleSendMessage()}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>placeholder="Ask Memory for advice..."</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>className="flex-1 bg-transparent px-3 py-2 focus:outline-none"</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>disabled={isLoading}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;button onClick={handleSendMessage} disabled={isLoading} className="p-2 bg-pink-600 rounded-md text-white disabled:bg-slate-500"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;Icon name="send" className="w-5 h-5"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* The pop-up modal for adding or editing a goal.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const GoalModal = ({ goal, onClose, onSave }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [title, setTitle] = useState(goal?.title || '');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [description, setDescription] = useState(goal?.description || '');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [type, setType] = useState(goal?.type || 'aspirational');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [deadline, setDeadline] = useState(goal?.deadline ? timestampToDateInput(goal.deadline) : '');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [currentValue, setCurrentValue] = useState(goal?.currentValue || 0);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [targetValue, setTargetValue] = useState(goal?.targetValue || 0);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [tags, setTags] = useState(goal?.tags || []);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [tagInput, setTagInput] = useState('');</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleTagInput = (e) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (e.key === 'Enter' &amp;&amp; tagInput.trim() !== '') {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>e.preventDefault();</p>
+<p class="p5"><span class="Apple-converted-space">            </span>if (!tags.includes(tagInput.trim())) {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>setTags([...tags, tagInput.trim()]);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setTagInput('');</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const removeTag = (tagToRemove) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>setTags(tags.filter(tag =&gt; tag !== tagToRemove));</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleSubmit = (e) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>e.preventDefault();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>onSave({<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">            </span>title,<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">            </span>description,<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">            </span>type,</p>
+<p class="p5"><span class="Apple-converted-space">            </span>deadline: type === 'timed' ? deadline : null,</p>
+<p class="p5"><span class="Apple-converted-space">            </span>currentValue: Number(currentValue),</p>
+<p class="p5"><span class="Apple-converted-space">            </span>targetValue: Number(targetValue),</p>
+<p class="p5"><span class="Apple-converted-space">            </span>tags</p>
+<p class="p5"><span class="Apple-converted-space">        </span>});</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;div className="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center z-50 animate-fade-in-fast"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-2xl w-full max-w-lg m-4 max-h-[90vh] overflow-y-auto"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white"&gt;{goal ? 'Edit Goal' : 'Add New Goal'}&lt;/h2&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;form onSubmit={handleSubmit} className="space-y-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>{/* Title */}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;label htmlFor="title" className="block text-sm font-medium text-slate-600 dark:text-slate-400"&gt;Title&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;input id="title" type="text" value={title} onChange={(e) =&gt; setTitle(e.target.value)} required className="mt-1 block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>{/* Description */}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;label htmlFor="description" className="block text-sm font-medium text-slate-600 dark:text-slate-400"&gt;Description&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;textarea id="description" value={description} onChange={(e) =&gt; setDescription(e.target.value)} rows="3" className="mt-1 block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"&gt;&lt;/textarea&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>{/* Tags */}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;label className="block text-sm font-medium text-slate-600 dark:text-slate-400"&gt;Tags&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div className="mt-1 flex flex-wrap gap-2 items-center bg-slate-100 dark:bg-slate-700 p-2 rounded-md"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>{tags.map(tag =&gt; (</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;span key={tag} className="flex items-center bg-pink-100 dark:bg-pink-900/50 text-pink-800 dark:text-pink-300 text-xs font-medium px-2.5 py-0.5 rounded-full"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>{tag}</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;button type="button" onClick={() =&gt; removeTag(tag)} className="ml-1.5 -mr-1"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                        </span>&lt;Icon name="x" className="w-3 h-3"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>))}</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;input</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>type="text"</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>value={tagInput}</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>onChange={(e) =&gt; setTagInput(e.target.value)}</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>onKeyDown={handleTagInput}</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>placeholder="Add a tag..."</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>className="bg-transparent focus:outline-none flex-grow"</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>{/* Goal Type */}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                         </span>&lt;label className="block text-sm font-medium text-slate-600 dark:text-slate-400"&gt;Goal Type&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                         </span>&lt;div className="mt-2 grid grid-cols-2 gap-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;button type="button" onClick={() =&gt; setType('aspirational')} className={`p-3 rounded-lg border-2 ${type==='aspirational' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-slate-200 dark:border-slate-600'}`}&gt;Aspirational&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;button type="button" onClick={() =&gt; setType('timed')} className={`p-3 rounded-lg border-2 ${type==='timed' ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20' : 'border-slate-200 dark:border-slate-600'}`}&gt;Timed&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                         </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>{/* Deadline (conditional) */}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>{type === 'timed' &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                         </span>&lt;div className="animate-fade-in-fast"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;label htmlFor="deadline" className="block text-sm font-medium text-slate-600 dark:text-slate-400"&gt;Deadline&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;input id="deadline" type="text" placeholder="YYYY-MM-DD" value={deadline} onChange={(e) =&gt; setDeadline(e.target.value)} className="mt-1 block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>{/* Progress */}</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;label className="block text-sm font-medium text-slate-600 dark:text-slate-400"&gt;Progress (Optional)&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div className="mt-2 flex items-center gap-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                           </span>&lt;input type="number" value={currentValue} onChange={e=&gt;setCurrentValue(e.target.value)} placeholder="Current" className="block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                           </span>&lt;span className="text-slate-400"&gt;/&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                           </span>&lt;input type="number" value={targetValue} onChange={e=&gt;setTargetValue(e.target.value)} placeholder="Target" className="block w-full bg-slate-100 dark:bg-slate-700 border-transparent rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-pink-500"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div className="flex justify-end space-x-4 pt-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;button type="button" onClick={onClose} className="px-4 py-2 bg-slate-200 dark:bg-slate-600 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-700"&gt;Cancel&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;button type="submit" className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"&gt;{goal?.id ? 'Save Changes' : 'Add Goal'}&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/form&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* A component representing a single goal in the list.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const GoalItem = ({ goal, onEdit, onDelete, onToggleStatus, onToggleFavorite, onMove, onUpdateGoal }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [isMinimized, setIsMinimized] = useState(true);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [subGoalInput, setSubGoalInput] = useState('');</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const isCompleted = goal.status === 'completed';</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const isExpired = goal.type === 'timed' &amp;&amp; goal.deadline &amp;&amp; goal.deadline.toDate() &lt; new Date() &amp;&amp; !isCompleted;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const progress = goal.targetValue &gt; 0 ? ((goal.currentValue || 0) / goal.targetValue) * 100 : 0;</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleIncrementProgress = (e) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>e.stopPropagation();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const newValue = (goal.currentValue || 0) + 1;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (newValue &lt;= goal.targetValue) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>onUpdateGoal(goal.id, { currentValue: newValue });</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleAddSubGoal = (e) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>e.preventDefault();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (subGoalInput.trim() === '') return;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const newSubGoal = { id: crypto.randomUUID(), title: subGoalInput.trim(), completed: false };</p>
+<p class="p5"><span class="Apple-converted-space">        </span>onUpdateGoal(goal.id, { subGoals: arrayUnion(newSubGoal) });</p>
+<p class="p5"><span class="Apple-converted-space">        </span>setSubGoalInput('');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleToggleSubGoal = (subGoal) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const updatedSubGoals = (goal.subGoals || []).map(sg =&gt; sg.id === subGoal.id ? {...sg, completed: !sg.completed} : sg);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>onUpdateGoal(goal.id, { subGoals: updatedSubGoals });</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleDeleteSubGoal = (subGoal) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>onUpdateGoal(goal.id, { subGoals: arrayRemove(subGoal) });</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;div className={`bg-white dark:bg-slate-800 p-4 rounded-xl shadow-lg border-l-4 transition-all duration-300 ${isCompleted ? 'border-green-500 opacity-70' : isExpired ? 'border-red-500' : 'border-pink-500'}`}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="flex items-start justify-between cursor-pointer" onClick={() =&gt; setIsMinimized(!isMinimized)}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;div className="flex items-start gap-3 overflow-hidden"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;button onClick={(e) =&gt; { e.stopPropagation(); onToggleStatus(goal); }} className="p-1 text-slate-400 hover:text-pink-500 flex-shrink-0" title={isCompleted ? 'Mark as Active' : 'Mark as Complete'}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                       </span>&lt;Icon name={isCompleted ? 'check' : 'uncheck'} className={`w-6 h-6 ${isCompleted ? 'text-green-500':''}`}/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                   </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                   </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;h3 className={`text-lg font-bold truncate ${isCompleted ? 'line-through' : ''}`}&gt;{goal.title}&lt;/h3&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>{goal.targetValue &gt; 0 &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;div className="flex items-center gap-2 mt-1"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                 </span>&lt;div className="w-24 h-2 bg-slate-200 dark:bg-slate-700 rounded-full sm:block"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;div className="h-2 bg-gradient-to-r from-pink-500 to-orange-400 rounded-full" style={{width: `${progress}%`}}&gt;&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;span className="text-xs text-slate-500"&gt;{Math.round(progress)}%&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                       </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">                   </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="flex items-center space-x-2 flex-shrink-0 ml-2"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                   </span>{goal.targetValue &gt; 0 &amp;&amp; !isCompleted &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;button onClick={handleIncrementProgress} className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-full text-pink-500 hover:bg-pink-100 dark:hover:bg-pink-900/50"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;Icon name="plus" className="w-4 h-4" /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                   </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">                   </span>&lt;button className="p-1 text-slate-400"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;Icon name={isMinimized ? 'chevronDown' : 'chevronUp'} className="w-5 h-5"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                   </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">            </span>{!isMinimized &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="mt-4 pl-9 animate-fade-in-fast space-y-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;p className="text-slate-600 dark:text-slate-400"&gt;{goal.description || "No description provided."}&lt;/p&gt;</p>
+<p class="p6"><span class="Apple-converted-space">                    </span></p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;h4 className="font-semibold text-sm mb-2"&gt;Sub-Goals&lt;/h4&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div className="space-y-2"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>{(goal.subGoals || []).map(sg =&gt; (</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;div key={sg.id} className="flex items-center justify-between group"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;div onClick={() =&gt; handleToggleSubGoal(sg)} className="flex items-center gap-2 cursor-pointer"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                        </span>&lt;Icon name={sg.completed ? 'check' : 'uncheck'} className={`w-5 h-5 ${sg.completed ? 'text-green-500' : 'text-slate-400'}`}/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                        </span>&lt;span className={`${sg.completed ? 'line-through text-slate-500' : ''}`}&gt;{sg.title}&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;button onClick={() =&gt; handleDeleteSubGoal(sg)} className="opacity-0 group-hover:opacity-100"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                         </span>&lt;Icon name="trash" className="w-4 h-4 text-red-500" /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>))}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;form onSubmit={handleAddSubGoal} className="mt-2 flex gap-2"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;input type="text" value={subGoalInput} onChange={e =&gt; setSubGoalInput(e.target.value)} placeholder="Add a mini goal..." className="flex-grow bg-slate-100 dark:bg-slate-700 rounded-md border-transparent text-sm px-2 py-1 focus:ring-pink-500" /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;button type="submit" className="bg-pink-500 text-white rounded-md px-2 py-1 text-sm"&gt;Add&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/form&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;div className="flex flex-wrap items-center justify-between gap-y-2 pt-2 border-t border-slate-200 dark:border-slate-700"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>{goal.type === 'timed' &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;p className={`text-sm ${isExpired ? 'text-red-500 font-semibold' : 'text-slate-500 dark:text-slate-400'}`}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>Deadline: {formatDate(goal.deadline)} {isExpired &amp;&amp; "(Expired)"}</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>{goal.tags &amp;&amp; goal.tags.length &gt; 0 &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;div className="flex flex-wrap gap-2 mt-2"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>{goal.tags.map(tag =&gt; &lt;span key={tag} className="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-2 py-1 rounded-full"&gt;{tag}&lt;/span&gt;)}</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">                         </span>&lt;div className="flex items-center space-x-1"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                           </span>{goal.favorite &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                               </span>&lt;div className="flex"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;button onClick={(e) =&gt; {e.stopPropagation(); onMove(goal, 'up');}} className="p-1 text-slate-400 hover:text-white"&gt;&lt;Icon name="chevronUp" className="w-5 h-5"/&gt;&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;button onClick={(e) =&gt; {e.stopPropagation(); onMove(goal, 'down');}} className="p-1 text-slate-400 hover:text-white"&gt;&lt;Icon name="chevronDown" className="w-5 h-5"/&gt;&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                               </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                           </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">                           </span>&lt;button onClick={(e) =&gt; {e.stopPropagation(); onToggleFavorite(goal);}} className={`p-1 ${goal.favorite ? 'text-yellow-400' : 'text-slate-400 hover:text-yellow-400'}`} title="Favorite"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>&lt;Icon name="star" className={`w-5 h-5 ${goal.favorite ? 'fill-current' : ''}`} /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                           </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                           </span>&lt;button onClick={(e) =&gt; {e.stopPropagation(); onEdit(goal);}} className="p-1 text-slate-400 hover:text-white" title="Edit"&gt;&lt;Icon name="edit" className="w-5 h-5"/&gt;&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                           </span>&lt;button onClick={(e) =&gt; {e.stopPropagation(); onDelete(goal.id, goal.title);}} className="p-1 text-red-500 hover:text-red-400" title="Delete"&gt;&lt;Icon name="trash" className="w-5 h-5"/&gt;&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* The Goals Page: The main interface for managing all goals.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const GoalsPage = ({ goals, db, user, journals, requestConfirmation }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [isModalOpen, setIsModalOpen] = useState(false);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [currentGoal, setCurrentGoal] = useState(null);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [isFilterOpen, setIsFilterOpen] = useState(false);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [sortBy, setSortBy] = useState('newest');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [isAISuggesting, setIsAISuggesting] = useState(false);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [filters, setFilters] = useState({ status: 'all', deadline: 'all', favorite: 'all', tags: [] });</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const goalsCollectionPath = `artifacts/${appId}/users/${user.uid}/goals`;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const allTags = useMemo(() =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const tags = new Set();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>goals.forEach(g =&gt; g.tags?.forEach(t =&gt; tags.add(t)));</p>
+<p class="p5"><span class="Apple-converted-space">        </span>return Array.from(tags);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}, [goals]);</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleAISuggestion = async () =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>setIsAISuggesting(true);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const activeGoals = goals.filter(g =&gt; g.status === 'active').map(g =&gt; g.title).join(', ');</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const recentJournals = journals.slice(0, 3).map(j =&gt; `"${j.text.substring(0, 80)}..."`).join('\n');</p>
+<p class="p6"><span class="Apple-converted-space">        </span></p>
+<p class="p5"><span class="Apple-converted-space">        </span>const prompt = `I'm looking for a new goal. Based on my current goals (${activeGoals}) and my recent journal entries (${recentJournals}), suggest one actionable and specific new goal for me. Just provide the goal title, nothing else.`;</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">        </span>try {</p>
+<p class="p5"><span class="Apple-converted-space">             </span>const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${geminiApiKey}`;</p>
+<p class="p5"><span class="Apple-converted-space">             </span>const response = await fetch(apiUrl, {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>method: 'POST',</p>
+<p class="p5"><span class="Apple-converted-space">                </span>headers: { 'Content-Type': 'application/json' },</p>
+<p class="p5"><span class="Apple-converted-space">                </span>body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }]})</p>
+<p class="p5"><span class="Apple-converted-space">            </span>});</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const data = await response.json();</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const suggestion = data.candidates?.[0]?.content?.parts?.[0]?.text;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>if (suggestion) {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>handleOpenModal({ title: suggestion.replace(/"/g, '').trim() });</p>
+<p class="p5"><span class="Apple-converted-space">            </span>}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} catch (error) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>console.error("AI Goal suggestion failed: ", error);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} finally {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setIsAISuggesting(false);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const sortedAndFilteredGoals = useMemo(() =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const now = new Date();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>let filtered = goals</p>
+<p class="p5"><span class="Apple-converted-space">            </span>.filter(g =&gt; (filters.status === 'all' || g.status === filters.status))</p>
+<p class="p5"><span class="Apple-converted-space">            </span>.filter(g =&gt; (filters.favorite === 'all' || g.favorite))</p>
+<p class="p5"><span class="Apple-converted-space">            </span>.filter(g =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>if (filters.deadline === 'all') return true;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>if (filters.deadline === 'upcoming') return g.deadline &amp;&amp; g.deadline.toDate() &gt;= now;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>if (filters.deadline === 'expired') return g.deadline &amp;&amp; g.deadline.toDate() &lt; now;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>return true;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>})</p>
+<p class="p5"><span class="Apple-converted-space">            </span>.filter(g =&gt; (filters.tags.length === 0 || filters.tags.every(tag =&gt; g.tags?.includes(tag))));</p>
+<p class="p6"><span class="Apple-converted-space">            </span></p>
+<p class="p5"><span class="Apple-converted-space">        </span>return [...filtered].sort((a, b) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>if (a.favorite &amp;&amp; !b.favorite) return -1;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>if (!a.favorite &amp;&amp; b.favorite) return 1;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>if (a.favorite &amp;&amp; b.favorite) return (a.sortOrder || 0) - (b.sortOrder || 0);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>switch (sortBy) {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>case 'oldest': return (a.createdAt?.toDate() || 0) - (b.createdAt?.toDate() || 0);</p>
+<p class="p5"><span class="Apple-converted-space">                </span>case 'deadline':</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>if (!a.deadline) return 1;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>if (!b.deadline) return -1;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>return (a.deadline.toDate() || 0) - (b.deadline.toDate() || 0);</p>
+<p class="p5"><span class="Apple-converted-space">                </span>case 'newest':</p>
+<p class="p5"><span class="Apple-converted-space">                </span>default:</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>return (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>});</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>}, [goals, filters, sortBy]);</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleFilterChange = (key, value) =&gt; setFilters(prev =&gt; ({...prev, [key]: value}));</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleTagToggle = (tag) =&gt; setFilters(prev =&gt; ({...prev, tags: prev.tags.includes(tag) ? prev.tags.filter(t =&gt; t !== tag) : [...prev.tags, tag]}));</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleOpenModal = (goal = null) =&gt; { setCurrentGoal(goal); setIsModalOpen(true); };</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleCloseModal = () =&gt; { setIsModalOpen(false); setCurrentGoal(null); };</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleSaveGoal = async (goalData) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const dataToSave = {<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">            </span>...goalData,</p>
+<p class="p5"><span class="Apple-converted-space">            </span>deadline: goalData.deadline ? dateToTimestamp(goalData.deadline) : null</p>
+<p class="p5"><span class="Apple-converted-space">        </span>};</p>
+<p class="p5"><span class="Apple-converted-space">        </span>try {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>if (currentGoal?.id) {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>await updateDoc(doc(db, goalsCollectionPath, currentGoal.id), dataToSave);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>} else {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>await addDoc(collection(db, goalsCollectionPath), {</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>...dataToSave,</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>status: 'active', favorite: false, sortOrder: 0, createdAt: serverTimestamp(), subGoals: []</p>
+<p class="p5"><span class="Apple-converted-space">                </span>});</p>
+<p class="p5"><span class="Apple-converted-space">            </span>}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} catch (error) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>console.error("Error saving goal: ", error);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} finally {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>handleCloseModal();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleDeleteGoal = (goalId, goalTitle) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>requestConfirmation(</p>
+<p class="p5"><span class="Apple-converted-space">            </span>'Delete Goal?',</p>
+<p class="p5"><span class="Apple-converted-space">            </span>`Are you sure you want to permanently delete "${goalTitle}"? This action cannot be undone.`,</p>
+<p class="p5"><span class="Apple-converted-space">            </span>async () =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>try {</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>await deleteDoc(doc(db, goalsCollectionPath, goalId));</p>
+<p class="p5"><span class="Apple-converted-space">                </span>} catch (error) {</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>console.error("Error deleting goal: ", error);</p>
+<p class="p5"><span class="Apple-converted-space">                </span>}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const handleUpdateGoal = async (goalId, data) =&gt; await updateDoc(doc(db, goalsCollectionPath, goalId), data);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const toggleGoalStatus = async (goal) =&gt; await handleUpdateGoal(goal.id, { status: goal.status === 'active' ? 'completed' : 'active' });</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const toggleFavorite = async (goal) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const isFavoriting = !goal.favorite;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>let sortOrder = 0;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (isFavoriting) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const favoritedGoals = goals.filter(g =&gt; g.favorite);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>sortOrder = favoritedGoals.length &gt; 0 ? Math.max(...favoritedGoals.map(g =&gt; g.sortOrder || 0)) + 1 : 1;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>await handleUpdateGoal(goal.id, { favorite: isFavoriting, sortOrder });</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const moveFavorite = async (goal, direction) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const favoritedGoals = goals.filter(g =&gt; g.favorite).sort((a,b) =&gt; (a.sortOrder || 0) - (b.sortOrder || 0));</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const currentIndex = favoritedGoals.findIndex(g =&gt; g.id === goal.id);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>let swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (swapIndex &gt;= 0 &amp;&amp; swapIndex &lt; favoritedGoals.length) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const otherGoal = favoritedGoals[swapIndex];</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const batch = writeBatch(db);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>batch.update(doc(db, goalsCollectionPath, goal.id), { sortOrder: otherGoal.sortOrder });</p>
+<p class="p5"><span class="Apple-converted-space">            </span>batch.update(doc(db, goalsCollectionPath, otherGoal.id), { sortOrder: goal.sortOrder });</p>
+<p class="p5"><span class="Apple-converted-space">            </span>await batch.commit();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;div className="animate-fade-in"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="flex justify-between items-center mb-6"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;h1 className="text-3xl font-bold text-gray-900 dark:text-white"&gt;Your Goals&lt;/h1&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="flex items-center gap-2 sm:gap-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;button onClick={handleAISuggestion} disabled={isAISuggesting} className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 rounded-lg disabled:opacity-50"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;Icon name="sparkles" className="w-5 h-5 text-pink-500"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;span&gt;{isAISuggesting ? "Thinking..." : "Suggest Goal"}&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;button onClick={() =&gt; setIsFilterOpen(!isFilterOpen)} className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 rounded-lg"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;Icon name="filter" className="w-5 h-5"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;span className="hidden sm:inline"&gt;Filters&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;button onClick={() =&gt; handleOpenModal()} className="flex items-center gap-2 bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;Icon name="plus" className="w-5 h-5"/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;span className="hidden sm:inline"&gt;New Goal&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p6"><span class="Apple-converted-space">            </span></p>
+<p class="p5"><span class="Apple-converted-space">            </span>{isFilterOpen &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;div className="bg-white dark:bg-slate-800 p-4 rounded-lg mb-6 animate-fade-in-fast space-y-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>&lt;div className="grid grid-cols-1 md:grid-cols-4 gap-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;label className="text-sm font-medium"&gt;Status&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;select onChange={(e) =&gt; handleFilterChange('status', e.target.value)} value={filters.status} className="mt-1 w-full rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-pink-500"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                 </span>&lt;option value="all"&gt;All&lt;/option&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                 </span>&lt;option value="active"&gt;Active&lt;/option&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                 </span>&lt;option value="completed"&gt;Completed&lt;/option&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;/select&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                         </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;label className="text-sm font-medium"&gt;Deadline&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;select onChange={(e) =&gt; handleFilterChange('deadline', e.target.value)} value={filters.deadline} className="mt-1 w-full rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-pink-500"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                 </span>&lt;option value="all"&gt;All&lt;/option&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                 </span>&lt;option value="upcoming"&gt;Upcoming&lt;/option&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                 </span>&lt;option value="expired"&gt;Expired&lt;/option&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;/select&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                         </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;label className="text-sm font-medium"&gt;Favorite&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;select onChange={(e) =&gt; handleFilterChange('favorite', e.target.value)} value={filters.favorite} className="mt-1 w-full rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-pink-500"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                 </span>&lt;option value="all"&gt;All&lt;/option&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                 </span>&lt;option value="favorited"&gt;Favorited&lt;/option&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;/select&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;label className="text-sm font-medium"&gt;Sort By&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;select onChange={(e) =&gt; setSortBy(e.target.value)} value={sortBy} className="mt-1 w-full rounded-md bg-slate-100 dark:bg-slate-700 border-transparent focus:ring-pink-500"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                 </span>&lt;option value="newest"&gt;Newest&lt;/option&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                 </span>&lt;option value="oldest"&gt;Oldest&lt;/option&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                 </span>&lt;option value="deadline"&gt;Deadline&lt;/option&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                             </span>&lt;/select&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>{allTags.length &gt; 0 &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;label className="text-sm font-medium"&gt;Tags&lt;/label&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;div className="mt-2 flex flex-wrap gap-2"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>{allTags.map(tag =&gt; (</p>
+<p class="p5"><span class="Apple-converted-space">                                    </span>&lt;button key={tag} onClick={() =&gt; handleTagToggle(tag)} className={`px-3 py-1 text-xs rounded-full ${filters.tags.includes(tag) ? 'bg-pink-500 text-white' : 'bg-slate-200 dark:bg-slate-700'}`}&gt;{tag}&lt;/button&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                                </span>))}</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                     </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">                 </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>)}</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;div className="space-y-4"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>{sortedAndFilteredGoals.length &gt; 0 ? sortedAndFilteredGoals.map(goal =&gt; (</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;GoalItem<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                        </span>key={goal.id}<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                        </span>goal={goal}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>onEdit={handleOpenModal}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>onDelete={handleDeleteGoal}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>onToggleStatus={toggleGoalStatus}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>onToggleFavorite={toggleFavorite}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>onMove={moveFavorite}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>onUpdateGoal={handleUpdateGoal}</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>)) : (</p>
+<p class="p5"><span class="Apple-converted-space">                   </span>&lt;p className="text-center text-slate-500 dark:text-slate-400 py-10"&gt;No goals match the current filters. Try creating one!&lt;/p&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p6"><span class="Apple-converted-space">            </span></p>
+<p class="p5"><span class="Apple-converted-space">            </span>{isModalOpen &amp;&amp; (</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;GoalModal<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                    </span>goal={currentGoal}<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                    </span>onClose={handleCloseModal}<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                    </span>onSave={handleSaveGoal}<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                </span>/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>)}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p6"><br></p>
+<p class="p5">// =================================================================================================</p>
+<p class="p5">// SECTION 4: LAYOUT &amp; MAIN APP COMPONENT</p>
+<p class="p5">// This is the core of the application that brings everything together.</p>
+<p class="p5">// =================================================================================================</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* A single item in the navigation sidebar.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const NavItem = ({ icon, label, isActive, onClick, isExpanded }) =&gt; (</p>
+<p class="p5"><span class="Apple-converted-space">    </span>&lt;button onClick={onClick} className={`flex items-center space-x-3 px-3.5 py-3 rounded-lg w-full text-left transition-colors ${isActive ? 'bg-pink-600 text-white' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'}`}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;Icon name={icon} className="w-6 h-6 flex-shrink-0" /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;span className={`capitalize transition-opacity duration-200 whitespace-nowrap overflow-hidden ${isExpanded ? 'opacity-100' : 'opacity-0'}`}&gt;{label}&lt;/span&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>&lt;/button&gt;</p>
+<p class="p5">);</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* The main Layout component. It creates the collapsible sidebar and the main content area.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">const Layout = ({ children, currentPage, onNavigate, user, settings }) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const navTabs = settings?.tabs || ['dashboard', 'goals', 'journal', 'chat', 'settings'];</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [isExpanded, setIsExpanded] = useState(false);</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const tabDetails = {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>dashboard: { label: 'Dashboard', icon: 'dashboard' },</p>
+<p class="p5"><span class="Apple-converted-space">        </span>goals: { label: 'Goals', icon: 'goals' },</p>
+<p class="p5"><span class="Apple-converted-space">        </span>journal: { label: 'Journal', icon: 'journal' },</p>
+<p class="p5"><span class="Apple-converted-space">        </span>chat: { label: 'Chat', icon: 'chat' },</p>
+<p class="p5"><span class="Apple-converted-space">        </span>settings: { label: 'Settings', icon: 'settings' },</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;div className="flex h-screen bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-sans"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;aside<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                </span>className={`bg-white dark:bg-slate-800 p-4 flex-shrink-0 flex flex-col border-r border-slate-200 dark:border-slate-700 transition-all duration-300 ease-in-out ${isExpanded ? 'w-64' : 'w-20'}`}</p>
+<p class="p5"><span class="Apple-converted-space">                </span>onMouseEnter={() =&gt; setIsExpanded(true)}</p>
+<p class="p5"><span class="Apple-converted-space">                </span>onMouseLeave={() =&gt; setIsExpanded(false)}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;div className="flex items-center space-x-2 mb-10 px-2 overflow-hidden"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;Icon name="brain" className="w-8 h-8 text-pink-500 flex-shrink-0" /&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>&lt;h1 className={`text-2xl font-bold text-gray-900 dark:text-white transition-opacity duration-200 whitespace-nowrap ${isExpanded ? 'opacity-100' : 'opacity-0'}`}&gt;MemoryAI&lt;/h1&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;nav className="flex-1 space-y-2"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>{navTabs.map(tabKey =&gt; (</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>&lt;NavItem<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                            </span>key={tabKey}</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>icon={tabDetails[tabKey].icon}</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>label={tabDetails[tabKey].label}</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>isActive={currentPage === tabKey}</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>onClick={() =&gt; onNavigate(tabKey)}</p>
+<p class="p5"><span class="Apple-converted-space">                            </span>isExpanded={isExpanded}</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>))}</p>
+<p class="p5"><span class="Apple-converted-space">                </span>&lt;/nav&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/aside&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;main className="flex-1 p-4 sm:p-8 overflow-y-auto"&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>{children}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/main&gt;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">};</p>
+<p class="p6"><br></p>
+<p class="p5">/**</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* The root `App` component.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>* This is the main engine of the application.</p>
+<p class="p5"><span class="Apple-converted-space"> </span>*/</p>
+<p class="p5">function App() {</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [user, setUser] = useState(null);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [goals, setGoals] = useState([]);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [journals, setJournals] = useState([]);</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [settings, setSettings] = useState({ theme: 'dark', name: '', tabs: ['dashboard', 'goals', 'journal', 'chat', 'settings'], showStreak: true});</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [currentPage, setCurrentPage] =useState('dashboard');</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [status, setStatus] = useState({ loading: true, error: null });</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [modal, setModal] = useState({ isOpen: false, title: '', content: ''});</p>
+<p class="p5"><span class="Apple-converted-space">    </span>const [confirmation, setConfirmation] = useState({ isOpen: false, title: '', content: '', onConfirm: null });</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const { auth, db } = useMemo(() =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>try {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const app = initializeApp(firebaseConfig);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>return { auth: getAuth(app), db: getFirestore(app) };</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} catch (e) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>console.error("Firebase init failed", e);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setStatus({ loading: false, error: "Firebase configuration is invalid." });</p>
+<p class="p5"><span class="Apple-converted-space">            </span>return { auth: null, db: null };</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}, []);</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const openDevModal = (title, content) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>setModal({ isOpen: true, title, content });</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const requestConfirmation = (title, content, onConfirm) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>setConfirmation({ isOpen: true, title, content, onConfirm });</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>useEffect(() =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (settings?.theme === 'dark') {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>document.documentElement.classList.add('dark');</p>
+<p class="p5"><span class="Apple-converted-space">        </span>} else {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>document.documentElement.classList.remove('dark');</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}, [settings.theme]);</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>useEffect(() =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (!auth) return;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>const unsubscribe = onAuthStateChanged(auth, async (currentUser) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>if (currentUser) {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>setUser(currentUser);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>} else {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>try {</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>if (initialAuthToken) {</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>await signInWithCustomToken(auth, initialAuthToken);</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>} else {</p>
+<p class="p5"><span class="Apple-converted-space">                        </span>await signInAnonymously(auth);</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p5"><span class="Apple-converted-space">                </span>} catch (err) {</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>console.error("Auth failed:", err);</p>
+<p class="p5"><span class="Apple-converted-space">                    </span>setStatus({ loading: false, error: "Could not authenticate user." });</p>
+<p class="p5"><span class="Apple-converted-space">                </span>}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>});</p>
+<p class="p5"><span class="Apple-converted-space">        </span>return () =&gt; unsubscribe();</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}, [auth]);</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>useEffect(() =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>if (!db || !user) return;</p>
+<p class="p6"><span class="Apple-converted-space">        </span></p>
+<p class="p5"><span class="Apple-converted-space">        </span>setStatus({ loading: true, error: null });</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">        </span>const collections = {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>goals: `artifacts/${appId}/users/${user.uid}/goals`,</p>
+<p class="p5"><span class="Apple-converted-space">            </span>journals: `artifacts/${appId}/users/${user.uid}/journals`,</p>
+<p class="p5"><span class="Apple-converted-space">            </span>settings: `artifacts/${appId}/users/${user.uid}/settings`</p>
+<p class="p5"><span class="Apple-converted-space">        </span>};</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">        </span>const unsubGoals = onSnapshot(query(collection(db, collections.goals)), (snapshot) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setGoals(snapshot.docs.map(doc =&gt; ({ id: doc.id, ...doc.data() })));</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setStatus(s =&gt; ({ ...s, loading: false }));</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}, (err) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>console.error("Error fetching goals:", err);</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setStatus({ loading: false, error: "Failed to load goals." });</p>
+<p class="p5"><span class="Apple-converted-space">        </span>});</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">        </span>const unsubJournals = onSnapshot(query(collection(db, collections.journals)), (snapshot) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>const journalsData = snapshot.docs.map(doc =&gt; ({ id: doc.id, ...doc.data() })).sort((a,b) =&gt; (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0));</p>
+<p class="p5"><span class="Apple-converted-space">            </span>setJournals(journalsData);</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}, (err) =&gt; console.error("Error fetching journals:", err));</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">        </span>const unsubSettings = onSnapshot(doc(db, collections.settings, 'main'), (doc) =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>if (doc.exists()) {</p>
+<p class="p5"><span class="Apple-converted-space">                </span>setSettings(s =&gt; ({...s, ...doc.data()}));</p>
+<p class="p5"><span class="Apple-converted-space">            </span>}</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}, (err) =&gt; console.error("Error fetching settings:", err));</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">        </span>return () =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>unsubGoals();</p>
+<p class="p5"><span class="Apple-converted-space">            </span>unsubJournals();</p>
+<p class="p5"><span class="Apple-converted-space">            </span>unsubSettings();</p>
+<p class="p5"><span class="Apple-converted-space">        </span>};</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}, [db, user]);</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>const renderPage = () =&gt; {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>switch (currentPage) {</p>
+<p class="p5"><span class="Apple-converted-space">            </span>case 'goals': return &lt;GoalsPage goals={goals} journals={journals} db={db} user={user} requestConfirmation={requestConfirmation} /&gt;;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>case 'journal': return &lt;JournalPage journals={journals} goals={goals} db={db} user={user} openDevModal={openDevModal} requestConfirmation={requestConfirmation} /&gt;;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>case 'chat': return &lt;ChatPage goals={goals} journals={journals} db={db} user={user} /&gt;;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>case 'settings': return &lt;SettingsPage settings={settings} goals={goals} journals={journals} db={db} user={user} openDevModal={openDevModal} /&gt;;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>case 'dashboard':</p>
+<p class="p5"><span class="Apple-converted-space">            </span>default: return &lt;DashboardPage goals={goals} journals={journals} onNavigate={setCurrentPage} settings={settings} /&gt;;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>}</p>
+<p class="p5"><span class="Apple-converted-space">    </span>};</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>if (status.error) {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>return &lt;div className="flex items-center justify-center h-screen bg-red-900 text-white p-4"&gt;Error: {status.error}&lt;/div&gt;;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}</p>
+<p class="p6"><span class="Apple-converted-space">    </span></p>
+<p class="p5"><span class="Apple-converted-space">    </span>if (status.loading || !user) {</p>
+<p class="p5"><span class="Apple-converted-space">        </span>return &lt;div className="flex items-center justify-center h-screen bg-slate-900 text-white"&gt;Loading MemoryAI...&lt;/div&gt;;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>}</p>
+<p class="p6"><br></p>
+<p class="p5"><span class="Apple-converted-space">    </span>return (</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;Layout currentPage={currentPage} onNavigate={setCurrentPage} user={user} settings={settings}&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>{renderPage()}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/Layout&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;Modal<span class="Apple-converted-space"> </span></p>
+<p class="p5"><span class="Apple-converted-space">                </span>isOpen={modal.isOpen}</p>
+<p class="p5"><span class="Apple-converted-space">                </span>onClose={() =&gt; setModal({isOpen: false, title: '', content:''})}</p>
+<p class="p5"><span class="Apple-converted-space">                </span>title={modal.title}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>{modal.content}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/Modal&gt;</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;ConfirmationModal</p>
+<p class="p5"><span class="Apple-converted-space">                </span>isOpen={confirmation.isOpen}</p>
+<p class="p5"><span class="Apple-converted-space">                </span>onClose={() =&gt; setConfirmation({ isOpen: false, title: '', content: '', onConfirm: null })}</p>
+<p class="p5"><span class="Apple-converted-space">                </span>onConfirm={confirmation.onConfirm}</p>
+<p class="p5"><span class="Apple-converted-space">                </span>title={confirmation.title}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&gt;</p>
+<p class="p5"><span class="Apple-converted-space">                </span>{confirmation.content}</p>
+<p class="p5"><span class="Apple-converted-space">            </span>&lt;/ConfirmationModal&gt;</p>
+<p class="p5"><span class="Apple-converted-space">        </span>&lt;/&gt;</p>
+<p class="p5"><span class="Apple-converted-space">    </span>);</p>
+<p class="p5">}</p>
+<p class="p6"><br></p>
+<p class="p5">export default App;</p>
+<p class="p6"><br></p>
+</body>
+</html>
